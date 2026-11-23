@@ -1,0 +1,81 @@
+{% extends "store/_tai_khoan_layout.html" %}
+{% set tk_tab = 'don_hang' %}
+{% set tk_crumb = 'Đơn hàng của tôi' %}
+{% block tieu_de %}Đơn hàng của tôi{% endblock %}
+{% block tk_noi_dung %}
+
+<div class="acc-head">
+  <div>
+    <h1>Đơn hàng của tôi</h1>
+    <p class="acc-sub">Theo dõi trạng thái xử lý, xem tiến trình giao hàng hoặc mua lại chỉ với 1 lần bấm.</p>
+  </div>
+  <form method="get" action="{{ url_for('tai_khoan_don_hang') }}" class="acc-search-form">
+    {% if trang_thai %}<input type="hidden" name="trang_thai" value="{{ trang_thai }}">{% endif %}
+    <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Tìm mã đơn hoặc tên sản phẩm…">
+    <button type="submit" class="btn btn-black btn-sm">Tìm</button>
+  </form>
+</div>
+
+<nav class="order-tabs" aria-label="Lọc theo trạng thái đơn hàng">
+  <a href="{{ url_for('tai_khoan_don_hang', q=q or None) }}" class="{{ 'active' if not trang_thai }}">
+    Tất cả <span>({{ dem_tt.get('TAT_CA', 0) }})</span>
+  </a>
+  {% for ma_tt, nhan_tt in trang_thai_nhan.items() %}
+  <a href="{{ url_for('tai_khoan_don_hang', trang_thai=ma_tt, q=q or None) }}" class="{{ 'active' if trang_thai == ma_tt }}">
+    {{ nhan_tt }} <span>({{ dem_tt.get(ma_tt, 0) }})</span>
+  </a>
+  {% endfor %}
+</nav>
+
+{% if don %}
+<div class="order-card-list">
+  {% for d in don %}
+  <article class="order-card">
+    <div class="order-card-head">
+      <div class="order-card-id">
+        <a href="{{ url_for('tai_khoan_don', ma_don=d._id) }}"><strong>{{ d._id }}</strong></a>
+        <span>· {{ d.ngay_dat|ngay }}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:12px;color:#666666">{{ d.phuong_thuc_tt }} · {{ d.trang_thai_tt|trang_thai_tt }}</span>
+        <span class="status-pill {{ trang_thai_lop.get(d.trang_thai, '') }}">{{ d.trang_thai|trang_thai }}</span>
+      </div>
+    </div>
+
+    <div class="order-card-items">
+      {% for ct in d.chi_tiet %}
+      <div class="order-line">
+        <img class="cart-thumb" style="width:52px;height:68px" src="{{ url_for('static', filename='img/' ~ (ct.hinh_anh or 'prod_shirt_white.jpg')) }}" alt="{{ ct.ten_sp }}">
+        <div class="order-line-info">
+          <a href="{{ url_for('chi_tiet_sp', ma_sp=ct.ma_sp) }}" class="order-line-name">{{ ct.ten_sp }}</a>
+          <div class="order-line-meta">{{ ct.mau }} · Size {{ ct.size }} × {{ ct.so_luong }}</div>
+        </div>
+        <div class="order-line-price">{{ (ct.so_luong * ct.don_gia)|tien }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="order-card-foot">
+      <div class="order-total">Tổng cộng: <strong>{{ d.tong_tien|tien }}</strong></div>
+      <div class="order-card-actions">
+        {% if d.trang_thai == 'HOAN_THANH' and d.chi_tiet %}
+        <a href="{{ url_for('chi_tiet_sp', ma_sp=d.chi_tiet[0].ma_sp) }}#danh-gia" class="btn btn-outline btn-sm">Đánh giá</a>
+        {% endif %}
+        <form method="post" action="{{ url_for('tai_khoan_mua_lai', ma_don=d._id) }}">
+          <button type="submit" class="btn btn-outline btn-sm">Mua lại</button>
+        </form>
+        <a href="{{ url_for('tai_khoan_don', ma_don=d._id) }}" class="btn btn-black btn-sm">Chi tiết</a>
+      </div>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="acc-empty">
+  <i class="bi bi-receipt"></i>
+  <p>Không tìm thấy đơn hàng nào phù hợp với bộ lọc hiện tại.</p>
+  <a href="{{ url_for('tai_khoan_don_hang') }}" class="btn btn-outline btn-sm">Xem tất cả đơn hàng</a>
+</div>
+{% endif %}
+
+{% endblock %}

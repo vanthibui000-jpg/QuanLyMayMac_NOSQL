@@ -1,0 +1,95 @@
+{% extends "store/_tai_khoan_layout.html" %}
+{% set tk_tab = 'ho_so' %}
+{% set tk_crumb = 'Thông tin cá nhân' %}
+{% block tieu_de %}Thông tin cá nhân{% endblock %}
+{% block tk_noi_dung %}
+
+<div class="acc-head">
+  <div>
+    <h1>Thông tin cá nhân</h1>
+    <p class="acc-sub">Cập nhật hồ sơ thành viên và bảo mật mật khẩu đăng nhập của bạn.</p>
+  </div>
+</div>
+
+<div class="acc-two-col">
+  <form method="post" action="{{ url_for('tai_khoan_ho_so') }}">
+    <input type="hidden" name="form_type" value="ho_so">
+    <h3 class="acc-subhead">Cập nhật hồ sơ</h3>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px;padding:14px 16px;border:1px solid var(--border);background:var(--surface-alt);font-size:13px">
+      <div>
+        <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:4px">Tên đăng nhập</div>
+        <strong>{{ nd.ten_dang_nhap }}</strong>
+      </div>
+      <div>
+        <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:4px">Mã khách hàng</div>
+        <strong>{{ khach._id }}</strong>
+      </div>
+      <div>
+        <div style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:4px">Vai trò</div>
+        <strong>Khách hàng (KH)</strong>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="ho_ten">Họ và tên *</label>
+      <input type="text" id="ho_ten" name="ho_ten" class="form-control" value="{{ nd.ho_ten or khach.ten_kh or '' }}" required maxlength="120">
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" class="form-control" value="{{ nd.email or khach.email or '' }}" maxlength="120" placeholder="ten@example.com">
+    </div>
+
+    <div class="form-group">
+      <label for="sdt">Số điện thoại nhận hàng *</label>
+      <input type="tel" id="sdt" name="sdt" class="form-control" value="{{ khach.sdt or nd.sdt or '' }}" required maxlength="15" placeholder="09xxxxxxxx">
+    </div>
+
+    <div class="form-group">
+      <label for="dia_chi">Địa chỉ giao hàng mặc định</label>
+      <input type="text" id="dia_chi" name="dia_chi" class="form-control" value="{{ khach.dia_chi or '' }}" maxlength="200" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành">
+    </div>
+
+    <div style="display:flex;gap:12px;align-items:center;margin-top:24px">
+      <button type="submit" class="btn btn-black">Lưu thay đổi</button>
+      <a href="{{ url_for('tai_khoan') }}" class="btn btn-outline">Hủy</a>
+    </div>
+  </form>
+
+  <aside class="summary-box">
+    <h3>Đổi mật khẩu</h3>
+    <form method="post" action="{{ url_for('tai_khoan_ho_so') }}">
+      <input type="hidden" name="form_type" value="mat_khau">
+
+      <div class="form-group">
+        <label for="mat_khau_cu">Mật khẩu hiện tại *</label>
+        <div class="pw-wrap">
+          <input type="password" id="mat_khau_cu" name="mat_khau_cu" class="form-control" required autocomplete="current-password" placeholder="Nhập mật khẩu đang dùng">
+          <button type="button" class="pw-toggle" data-pw-toggle="mat_khau_cu" aria-label="Hiện mật khẩu"><i class="bi bi-eye"></i></button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="mat_khau_moi">Mật khẩu mới * (tối thiểu 6 ký tự)</label>
+        <div class="pw-wrap">
+          <input type="password" id="mat_khau_moi" name="mat_khau_moi" class="form-control" required minlength="6" autocomplete="new-password" placeholder="Nhập mật khẩu mới">
+          <button type="button" class="pw-toggle" data-pw-toggle="mat_khau_moi" aria-label="Hiện mật khẩu"><i class="bi bi-eye"></i></button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="xac_nhan_mat_khau">Xác nhận mật khẩu mới *</label>
+        <div class="pw-wrap">
+          <input type="password" id="xac_nhan_mat_khau" name="xac_nhan_mat_khau" class="form-control" required minlength="6" autocomplete="new-password" placeholder="Nhập lại mật khẩu mới">
+          <button type="button" class="pw-toggle" data-pw-toggle="xac_nhan_mat_khau" aria-label="Hiện mật khẩu"><i class="bi bi-eye"></i></button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-black btn-block">Cập nhật mật khẩu</button>
+      <p style="font-size:11px;color:#666666;margin:12px 0 0;line-height:1.6">Mật khẩu mới được mã hóa an toàn và áp dụng ngay cho lần đăng nhập tiếp theo.</p>
+    </form>
+  </aside>
+</div>
+
+{% endblock %}

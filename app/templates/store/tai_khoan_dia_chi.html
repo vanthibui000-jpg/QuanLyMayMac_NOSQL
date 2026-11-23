@@ -1,0 +1,99 @@
+{% extends "store/_tai_khoan_layout.html" %}
+{% set tk_tab = 'dia_chi' %}
+{% set tk_crumb = 'Sổ địa chỉ' %}
+{% block tieu_de %}Sổ địa chỉ nhận hàng{% endblock %}
+{% block tk_noi_dung %}
+
+<div class="acc-head">
+  <div>
+    <h1>Sổ địa chỉ nhận hàng</h1>
+    <p class="acc-sub">Lưu nhiều địa chỉ (Nhà riêng, Công ty...) để chọn nhanh chỉ với 1 chạm khi thanh toán.</p>
+  </div>
+</div>
+
+<div class="acc-two-col">
+  <div>
+    <h3 class="acc-subhead">Địa chỉ đã lưu ({{ ds_dia_chi|length }})</h3>
+    {% if ds_dia_chi %}
+    <div class="addr-list">
+      {% for dc in ds_dia_chi %}
+      <article class="addr-card{{ ' is-default' if dc.mac_dinh }}">
+        <div class="addr-card-top">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span class="addr-tag">{{ dc.nhan or 'Địa chỉ' }}</span>
+            {% if dc.mac_dinh %}<span class="addr-default-badge">Mặc định</span>{% endif %}
+          </div>
+          <div class="addr-actions">
+            <a href="{{ url_for('tai_khoan_dia_chi', sua=dc.id) }}" class="ed-link" style="font-size:11px">Sửa</a>
+            <form method="post" action="{{ url_for('tai_khoan_xoa_dia_chi', id_dc=dc.id) }}" style="display:inline">
+              <button type="submit" class="addr-link-btn">Xóa</button>
+            </form>
+          </div>
+        </div>
+        <div class="addr-name"><strong>{{ dc.ho_ten }}</strong> · {{ dc.sdt }}</div>
+        <div class="addr-line">{{ dc.dia_chi }}</div>
+        {% if not dc.mac_dinh %}
+        <form method="post" action="{{ url_for('tai_khoan_dia_chi_mac_dinh', id_dc=dc.id) }}" style="margin-top:12px">
+          <button type="submit" class="btn btn-outline btn-sm">Đặt làm mặc định</button>
+        </form>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="acc-empty">
+      <i class="bi bi-geo-alt"></i>
+      <p>Bạn chưa lưu địa chỉ giao hàng nào. Hãy thêm địa chỉ đầu tiên ở biểu mẫu bên cạnh.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <aside class="summary-box">
+    <h3>{{ 'Cập nhật địa chỉ' if dang_sua else 'Thêm địa chỉ mới' }}</h3>
+    <form method="post" action="{{ url_for('tai_khoan_dia_chi') }}">
+      {% if dang_sua %}<input type="hidden" name="id_dc" value="{{ dang_sua.id }}">{% endif %}
+
+      <div class="form-group">
+        <label for="nhan">Nhãn địa chỉ</label>
+        <select id="nhan" name="nhan" class="form-control">
+          {% set nhan_ht = (dang_sua.nhan if dang_sua else form.get('nhan', 'Nhà riêng')) %}
+          {% for opt in ['Nhà riêng', 'Công ty', 'Người thân', 'Khác'] %}
+          <option value="{{ opt }}" {{ 'selected' if nhan_ht == opt }}>{{ opt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="ho_ten">Họ và tên người nhận *</label>
+        <input type="text" id="ho_ten" name="ho_ten" class="form-control" required maxlength="120"
+               value="{{ dang_sua.ho_ten if dang_sua else form.get('ho_ten', tk.khach.ten_kh) }}">
+      </div>
+
+      <div class="form-group">
+        <label for="sdt">Số điện thoại *</label>
+        <input type="tel" id="sdt" name="sdt" class="form-control" required maxlength="15"
+               value="{{ dang_sua.sdt if dang_sua else form.get('sdt', tk.khach.sdt) }}" placeholder="09xxxxxxxx">
+      </div>
+
+      <div class="form-group">
+        <label for="dia_chi">Địa chỉ giao hàng chi tiết *</label>
+        <textarea id="dia_chi" name="dia_chi" class="form-control" rows="3" required maxlength="240"
+                  placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành">{{ dang_sua.dia_chi if dang_sua else form.get('dia_chi', '') }}</textarea>
+      </div>
+
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:18px;cursor:pointer">
+        <input type="checkbox" name="mac_dinh" value="1" {{ 'checked' if (dang_sua and dang_sua.mac_dinh) or (not ds_dia_chi) }}>
+        <span>Đặt làm địa chỉ mặc định</span>
+      </label>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button type="submit" class="btn btn-black">{{ 'Lưu cập nhật' if dang_sua else 'Thêm địa chỉ' }}</button>
+        {% if dang_sua %}
+        <a href="{{ url_for('tai_khoan_dia_chi') }}" class="btn btn-outline">Hủy</a>
+        {% endif %}
+      </div>
+    </form>
+  </aside>
+</div>
+
+{% endblock %}

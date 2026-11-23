@@ -1,0 +1,134 @@
+{% extends "store/_tai_khoan_layout.html" %}
+{% set tk_tab = 'don_hang' %}
+{% set tk_crumb = 'Đơn ' ~ don._id %}
+{% block tieu_de %}Đơn hàng {{ don._id }}{% endblock %}
+{% block tk_noi_dung %}
+
+<div class="acc-head">
+  <div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <h1>Đơn hàng {{ don._id }}</h1>
+      <span class="status-pill {{ lop }}">{{ don.trang_thai|trang_thai }}</span>
+    </div>
+    <p class="acc-sub">Đặt lúc {{ don.ngay_dat|ngay }} · {{ don.phuong_thuc_tt }} · {{ don.trang_thai_tt|trang_thai_tt }}</p>
+  </div>
+  <div class="acc-actions">
+    <form method="post" action="{{ url_for('tai_khoan_mua_lai', ma_don=don._id) }}">
+      <button type="submit" class="btn btn-outline btn-sm">Mua lại đơn này</button>
+    </form>
+    {% if don.trang_thai == 'CHO_XAC_NHAN' %}
+    <button type="button" class="btn btn-crimson btn-sm" id="btn-open-cancel-modal">Hủy đơn hàng</button>
+    {% endif %}
+  </div>
+</div>
+
+<!-- HORIZONTAL 4-STEP ORDER PROGRESS STEPPER -->
+{% if don.trang_thai == 'DA_HUY' %}
+<div class="order-cancel-banner">
+  <i class="bi bi-x-octagon"></i>
+  <div>
+    <strong>Đơn hàng này đã bị hủy</strong>
+    <span>Tồn kho từng biến thể màu &amp; size đã được hoàn trả về hệ thống. Bạn có thể bấm <em>Mua lại đơn này</em> để đặt lại nhanh.</span>
+  </div>
+</div>
+{% else %}
+{% set buoc_so = {'CHO_XAC_NHAN': 1, 'DANG_CHUAN_BI': 2, 'DANG_GIAO': 3, 'HOAN_THANH': 4}.get(don.trang_thai, 1) %}
+<ol class="order-stepper" aria-label="Tiến trình giao hàng">
+  {% for stt, icon, nhan in [
+    (1, 'receipt', 'Chờ xác nhận'),
+    (2, 'box-seam', 'Đang chuẩn bị'),
+    (3, 'truck', 'Đang giao hàng'),
+    (4, 'check2-circle', 'Hoàn thành')
+  ] %}
+  <li class="stepper-step{{ ' done' if buoc_so > stt }}{{ ' current' if buoc_so == stt }}">
+    <span class="stepper-dot"><i class="bi bi-{{ icon }}"></i></span>
+    <span class="stepper-lbl">{{ nhan }}</span>
+  </li>
+  {% endfor %}
+</ol>
+{% endif %}
+
+<div class="order-detail-grid">
+  <div>
+    <h3 class="acc-subhead">Sản phẩm trong đơn ({{ don.chi_tiet|length }})</h3>
+    <div class="order-card" style="margin-bottom:28px">
+      <div class="order-card-items">
+        {% for ct in don.chi_tiet %}
+        <div class="order-line">
+          <img class="cart-thumb" style="width:58px;height:76px" src="{{ url_for('static', filename='img/' ~ (ct.hinh_anh or 'prod_shirt_white.jpg')) }}" alt="{{ ct.ten_sp }}">
+          <div class="order-line-info">
+            <a href="{{ url_for('chi_tiet_sp', ma_sp=ct.ma_sp) }}" class="order-line-name">{{ ct.ten_sp }}</a>
+            <div class="order-line-meta">{{ ct.mau }} · Size {{ ct.size }} · {{ ct.don_gia|tien }} × {{ ct.so_luong }}</div>
+            {% if don.trang_thai == 'HOAN_THANH' %}
+            <div style="margin-top:6px">
+              {% if ct.ma_sp in da_danh_gia %}
+              <a href="{{ url_for('chi_tiet_sp', ma_sp=ct.ma_sp) }}#danh-gia" class="ed-link" style="font-size:11px;color:#166534;border-color:#166534"><i class="bi bi-check2"></i> Đã đánh giá · Xem lại</a>
+              {% else %}
+              <a href="{{ url_for('chi_tiet_sp', ma_sp=ct.ma_sp) }}#danh-gia" class="ed-link" style="font-size:11px"><i class="bi bi-star"></i> Viết đánh giá sản phẩm</a>
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+          <div class="order-line-price">{{ (ct.so_luong * ct.don_gia)|tien }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <h3 class="acc-subhead">Nhật ký trạng thái</h3>
+    <ul class="order-timeline">
+      {% for ls in don.lich_su %}
+      <li>
+        <div style="font-weight:700;font-size:13px">{{ ls.trang_thai|trang_thai }}</div>
+        <div style="font-size:12px;color:#666666">{{ ls.thoi_gian|ngay }}{% if ls.ghi_chu %} · {{ ls.ghi_chu }}{% endif %}</div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <aside class="summary-box">
+    <h3>Thông tin giao hàng</h3>
+    <p style="margin:0 0 6px"><strong>{{ don.giao_hang.ho_ten }}</strong></p>
+    <p style="margin:0 0 6px;color:#555555">{{ don.giao_hang.sdt }}</p>
+    <p style="margin:0 0 6px;color:#555555">{{ don.giao_hang.dia_chi }}</p>
+    {% if don.giao_hang.ghi_chu %}<p style="margin:0 0 12px;font-size:12px;color:#666666">Ghi chú: {{ don.giao_hang.ghi_chu }}</p>{% endif %}
+
+    <div style="border-top:1px solid var(--border);margin:18px 0;padding-top:14px">
+      <div class="sum-row"><span>Phương thức</span><strong>{{ don.phuong_thuc_tt }}</strong></div>
+      <div class="sum-row"><span>Thanh toán</span><strong>{{ don.trang_thai_tt|trang_thai_tt }}</strong></div>
+      <div class="sum-row"><span>Phí vận chuyển</span><span>{{ 'Miễn phí' if don.phi_van_chuyen == 0 else (don.phi_van_chuyen|tien) }}</span></div>
+      <div class="sum-total"><span>Tổng cộng</span><span>{{ don.tong_tien|tien }}</span></div>
+    </div>
+    <a href="{{ url_for('tai_khoan_don_hang') }}" class="btn btn-outline btn-block btn-sm">← Quay lại danh sách đơn</a>
+  </aside>
+</div>
+
+{% if don.trang_thai == 'CHO_XAC_NHAN' %}
+<div class="store-modal-backdrop" id="cancel-modal" aria-hidden="true">
+  <div class="store-modal" role="dialog" aria-modal="true" aria-labelledby="cancel-modal-title">
+    <div class="store-modal-head">
+      <h3 id="cancel-modal-title">Xác nhận hủy đơn {{ don._id }}</h3>
+      <button type="button" class="drawer-close" data-close-modal="cancel-modal" aria-label="Đóng">&times;</button>
+    </div>
+    <form method="post" action="{{ url_for('tai_khoan_huy_don', ma_don=don._id) }}" class="store-modal-body">
+      <p style="margin:0 0 14px;font-size:13px;color:#525252">Chọn lý do hủy đơn để chúng tôi cải thiện trải nghiệm phục vụ:</p>
+      <div class="cancel-reasons">
+        <label><input type="radio" name="ly_do" value="Muốn thay đổi màu sắc hoặc kích cỡ" checked> Muốn thay đổi màu sắc hoặc kích cỡ</label>
+        <label><input type="radio" name="ly_do" value="Muốn cập nhật lại địa chỉ nhận hàng"> Muốn cập nhật lại địa chỉ nhận hàng</label>
+        <label><input type="radio" name="ly_do" value="Đặt nhầm sản phẩm / số lượng"> Đặt nhầm sản phẩm / số lượng</label>
+        <label><input type="radio" name="ly_do" value="Đổi ý, không còn nhu cầu mua"> Đổi ý, không còn nhu cầu mua</label>
+      </div>
+      <div class="form-group" style="margin-top:14px">
+        <label for="ly_do_khac">Ghi chú thêm (không bắt buộc)</label>
+        <input type="text" id="ly_do_khac" name="ly_do_khac" class="form-control" maxlength="160" placeholder="Nhập thêm chi tiết nếu cần...">
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
+        <button type="button" class="btn btn-outline btn-sm" data-close-modal="cancel-modal">Giữ lại đơn</button>
+        <button type="submit" class="btn btn-crimson btn-sm">Xác nhận hủy đơn</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

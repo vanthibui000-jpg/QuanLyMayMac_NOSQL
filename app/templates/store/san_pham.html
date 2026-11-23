@@ -1,0 +1,161 @@
+{% extends "store/base_store.html" %}
+{% block tieu_de %}{{ tieu_de_trang }}{% endblock %}
+{% block noi_dung %}
+
+<div class="page-banner">
+  <div class="container">
+    <div class="crumb">
+      <a href="{{ url_for('trang_chu') }}">Trang chủ</a>
+      <span>/</span>
+      <a href="{{ url_for('cua_hang') }}">Sản phẩm</a>
+      {% if dm_hien_tai %}
+      <span>/</span>
+      <span>{{ dm_hien_tai.ten_dm }}</span>
+      {% elif bo_suu_tap == 'sale' %}
+      <span>/</span>
+      <span>Final Sale</span>
+      {% elif bo_suu_tap == 'moi' %}
+      <span>/</span>
+      <span>Hàng mới</span>
+      {% endif %}
+    </div>
+    <div class="catalog-head">
+      <h1>{{ tieu_de_trang }} <span class="catalog-count">({{ tong }} sản phẩm)</span></h1>
+      <form method="get" class="sort-bar">
+        {% if danh_muc %}<input type="hidden" name="danh_muc" value="{{ danh_muc }}">{% endif %}
+        {% if bo_suu_tap %}<input type="hidden" name="bo_suu_tap" value="{{ bo_suu_tap }}">{% endif %}
+        {% if mau %}<input type="hidden" name="mau" value="{{ mau }}">{% endif %}
+        {% if size %}<input type="hidden" name="size" value="{{ size }}">{% endif %}
+        {% if khoang_gia %}<input type="hidden" name="gia" value="{{ khoang_gia }}">{% endif %}
+        {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+        <label for="sap_xep">Sắp xếp</label>
+        <select name="sap_xep" id="sap_xep" onchange="this.form.submit()">
+          <option value="moi" {{ 'selected' if sap_xep == 'moi' }}>Mới nhất</option>
+          <option value="gia-tang" {{ 'selected' if sap_xep == 'gia-tang' }}>Giá: Thấp → Cao</option>
+          <option value="gia-giam" {{ 'selected' if sap_xep == 'gia-giam' }}>Giá: Cao → Thấp</option>
+        </select>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="container catalog-layout">
+  <!-- LEFT FILTER SIDEBAR (2-COLUMN CATALOG LAYOUT) -->
+  <aside class="filter-sidebar" aria-label="Bộ lọc sản phẩm">
+    <h3 class="filter-title">
+      <span>Bộ lọc</span>
+      {% if danh_muc or bo_suu_tap or mau or size or khoang_gia or q %}
+      <a class="filter-reset" href="{{ url_for('cua_hang') }}">Xóa lọc</a>
+      {% endif %}
+    </h3>
+
+    <div class="filter-group">
+      <h4>Danh mục</h4>
+      <ul class="filter-list">
+        <li><a href="{{ url_for('cua_hang', bo_suu_tap=bo_suu_tap or None, mau=mau or None, size=size or None, gia=khoang_gia or None, sap_xep=sap_xep) }}" class="{{ 'active' if not danh_muc }}"><span>Tất cả sản phẩm</span></a></li>
+        {% for dm in danh_muc_nav %}
+        <li>
+          <a href="{{ url_for('cua_hang', danh_muc=dm.slug, mau=mau or None, size=size or None, gia=khoang_gia or None, sap_xep=sap_xep) }}" class="{{ 'active' if danh_muc == dm.slug }}">
+            <span>{{ dm.ten_dm }}</span>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="filter-group">
+      <h4>Bộ sưu tập</h4>
+      <div class="filter-chips">
+        <a href="{{ url_for('cua_hang', danh_muc=danh_muc or None, bo_suu_tap='' if bo_suu_tap == 'moi' else 'moi', mau=mau or None, size=size or None, gia=khoang_gia or None, sap_xep=sap_xep) }}" class="filter-chip{{ ' active' if bo_suu_tap == 'moi' }}">Hàng mới</a>
+        <a href="{{ url_for('cua_hang', danh_muc=danh_muc or None, bo_suu_tap='' if bo_suu_tap == 'sale' else 'sale', mau=mau or None, size=size or None, gia=khoang_gia or None, sap_xep=sap_xep) }}" class="filter-chip{{ ' active' if bo_suu_tap == 'sale' }}">Final Sale</a>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <h4>Màu sắc</h4>
+      <div class="filter-chips">
+        {% for m in tat_ca_mau %}
+        <a href="{{ url_for('cua_hang', danh_muc=danh_muc or None, bo_suu_tap=bo_suu_tap or None, mau='' if mau == m else m, size=size or None, gia=khoang_gia or None, sap_xep=sap_xep) }}" class="filter-chip{{ ' active' if mau == m }}">{{ m }}</a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <h4>Kích cỡ</h4>
+      <div class="filter-chips">
+        {% for s in ['S', 'M', 'L', 'XL', 'XXL'] %}
+        <a href="{{ url_for('cua_hang', danh_muc=danh_muc or None, bo_suu_tap=bo_suu_tap or None, mau=mau or None, size='' if size == s else s, gia=khoang_gia or None, sap_xep=sap_xep) }}" class="filter-chip{{ ' active' if size == s }}">{{ s }}</a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <h4>Khoảng giá</h4>
+      <ul class="filter-list">
+        <li><a href="{{ url_for('cua_hang', danh_muc=danh_muc or None, bo_suu_tap=bo_suu_tap or None, mau=mau or None, size=size or None, gia='' if khoang_gia == 'duoi-1tr' else 'duoi-1tr', sap_xep=sap_xep) }}" class="{{ 'active' if khoang_gia == 'duoi-1tr' }}">Dưới 1.000.000 ₫</a></li>
+        <li><a href="{{ url_for('cua_hang', danh_muc=danh_muc or None, bo_suu_tap=bo_suu_tap or None, mau=mau or None, size=size or None, gia='' if khoang_gia == '1tr-2tr' else '1tr-2tr', sap_xep=sap_xep) }}" class="{{ 'active' if khoang_gia == '1tr-2tr' }}">1.000.000 ₫ – 2.000.000 ₫</a></li>
+        <li><a href="{{ url_for('cua_hang', danh_muc=danh_muc or None, bo_suu_tap=bo_suu_tap or None, mau=mau or None, size=size or None, gia='' if khoang_gia == 'tren-2tr' else 'tren-2tr', sap_xep=sap_xep) }}" class="{{ 'active' if khoang_gia == 'tren-2tr' }}">Trên 2.000.000 ₫</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- RIGHT 3-COLUMN SHARP PRODUCT GRID -->
+  <div>
+    {% if q %}
+    <p style="margin:0 0 20px;color:#666666">Kết quả tìm kiếm cho: <strong>"{{ q }}"</strong></p>
+    {% endif %}
+
+    {% if ds %}
+    <div class="product-grid">
+      {% for sp in ds %}
+      {% set anh = (sp.hinh_anh[0] if sp.hinh_anh else 'prod_shirt_white.jpg') %}
+      {% set co_giam = sp.gia_goc and sp.gia_goc > sp.don_gia %}
+      {% set pct = (((sp.gia_goc - sp.don_gia) * 100) // sp.gia_goc) if co_giam else 0 %}
+      <article class="product-card">
+        <a href="{{ url_for('chi_tiet_sp', ma_sp=sp._id) }}" class="product-media">
+          <img src="{{ url_for('static', filename='img/' ~ anh) }}" alt="{{ sp.ten_sp }}" loading="lazy">
+          {% if co_giam %}
+          <span class="prod-badge sale">-{{ pct }}%</span>
+          {% elif sp.bo_suu_tap == 'moi' %}
+          <span class="prod-badge">NEW</span>
+          {% endif %}
+          {% set da_thich = sp._id in yeu_thich_ids %}
+          <button type="button" class="prod-wish{{ ' saved' if da_thich }}" data-wish="{{ sp._id }}" aria-label="Yêu thích {{ sp.ten_sp }}">
+            <i class="bi bi-heart{{ '-fill' if da_thich }}"></i>
+          </button>
+          <span class="prod-quick">Chọn màu &amp; size</span>
+        </a>
+        <div class="prod-info">
+          <div class="prod-colors">
+            {% for m in sp.ds_mau %}
+            <span class="color-dot" title="{{ m }}" style="background:{{ mau_hex.get(m, '#222222') }}"></span>
+            {% endfor %}
+          </div>
+          <div class="prod-cat">{{ ten_dm_map.get(sp.ma_dm, '') }}</div>
+          <a href="{{ url_for('chi_tiet_sp', ma_sp=sp._id) }}" class="prod-name">{{ sp.ten_sp }}</a>
+          <div class="prod-price">
+            <span class="{{ 'sale-val' if co_giam }}">{{ sp.don_gia|tien }}</span>
+            {% if co_giam %}<span class="old">{{ sp.gia_goc|tien }}</span>{% endif %}
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+    {% if pt.so_trang > 1 %}
+    <nav class="pager" aria-label="Phân trang">
+      {% if pt.truoc %}<a href="{{ pt.truoc }}">← Trước</a>{% endif %}
+      <span class="current">Trang {{ pt.trang }} / {{ pt.so_trang }}</span>
+      {% if pt.sau %}<a href="{{ pt.sau }}">Sau →</a>{% endif %}
+    </nav>
+    {% endif %}
+    {% else %}
+    <div style="border:1px solid var(--border);padding:56px 24px;text-align:center">
+      <p style="margin:0 0 18px;color:#666666">Không có sản phẩm nào phù hợp với bộ lọc hiện tại.</p>
+      <a href="{{ url_for('cua_hang') }}" class="btn btn-black btn-sm">Xem tất cả sản phẩm</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,205 @@
+{% extends "store/base_store.html" %}
+{% block tieu_de %}Bộ sưu tập{% endblock %}
+{% block noi_dung %}
+
+<!-- 1. FULL-BLEED COLLECTION HERO -->
+<section class="page-hero">
+  <img src="{{ url_for('static', filename='img/hero_01_campaign.jpg') }}" alt="Bộ sưu tập Thu Đông 2026">
+  <div class="page-hero-scrim"></div>
+  <div class="page-hero-inner">
+    <div class="container">
+      <div class="crumb crumb-light">
+        <a href="{{ url_for('trang_chu') }}">Trang chủ</a>
+        <span>/</span>
+        <span>Bộ sưu tập</span>
+      </div>
+      <div class="hero-eyebrow">Editorial Lookbook · Fall – Winter 2026</div>
+      <h1 class="page-hero-title">Bộ Sưu Tập Mùa Mới</h1>
+      <p class="page-hero-desc">Bốn chương thiết kế mang tinh thần tối giản đương đại — kết hợp đường cắt kiến trúc chuẩn mực cùng bảng chất liệu tự nhiên chọn lọc.</p>
+      <div class="chapter-pills">
+        <a href="#chuong-1">01 · Phom Kiến Trúc</a>
+        <a href="#chuong-2">02 · Lớp Áo Mùa Lạnh</a>
+        <a href="#chuong-3">03 · Chuẩn Mực Công Sở</a>
+        <a href="#chuong-4">04 · Tuyển Chọn Nổi Bật</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. CHAPTER 01: TAILORING & BLAZER (ASYMMETRIC EDITORIAL SPLIT) -->
+<section class="ed-section" id="chuong-1">
+  <div class="container col-split">
+    <div class="col-media-pair">
+      <div class="col-media-tall">
+        <img src="{{ url_for('static', filename='img/look_blazer.jpg') }}" alt="Phom dáng Blazer kiến trúc">
+      </div>
+      <div class="col-media-inset">
+        <img src="{{ url_for('static', filename='img/look_blazer_detail.jpg') }}" alt="Cận cảnh đường cắt ve áo">
+      </div>
+    </div>
+    <div class="col-copy">
+      <div class="chapter-num">Chapter 01 · Tailoring</div>
+      <h2 class="col-heading">Phom Dáng Kiến Trúc</h2>
+      <p>Tập trung vào tỷ lệ vai gọn, đường ve áo dứt khoát và phom đứng tự nhiên không gò bó. Mỗi thiết kế Blazer và Suit được cân chỉnh để dễ dàng chuyển đổi từ không gian làm việc sang những buổi gặp gỡ trang trọng buổi tối.</p>
+      <div class="col-meta-list">
+        <div><strong>Chất liệu chính</strong><span>Len Wool pha sợi thoáng nhẹ</span></div>
+        <div><strong>Phom dáng</strong><span>Tailored Fit · Slim Fit</span></div>
+        <div><strong>Bảng màu</strong><span>Xanh Navy · Đen · Xám Than</span></div>
+      </div>
+      <a href="{{ url_for('cua_hang', danh_muc='suits-blazer') }}" class="btn btn-black">Xem dòng Suits &amp; Blazer <i class="bi bi-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<!-- 3. CHAPTER 02: OUTERWEAR 3-COLUMN TALL LOOKBOOK (WARM STONE BAND) -->
+<section class="col-stone-band" id="chuong-2">
+  <div class="container">
+    <div class="col-center-head">
+      <div class="chapter-num">Chapter 02 · Outerwear</div>
+      <h2 class="col-heading">Lớp Áo Mùa Lạnh</h2>
+      <p>Cảm hứng từ hình khối kiến trúc tối giản với những đường cắt dài thanh thoát, giữ ấm hiệu quả mà vẫn nhẹ nhàng trong từng chuyển động.</p>
+    </div>
+
+    <div class="col-trio-grid">
+      <a href="{{ url_for('cua_hang', danh_muc='ao-khoac') }}" class="col-trio-card">
+        <div class="col-trio-media">
+          <img src="{{ url_for('static', filename='img/look_overcoat.jpg') }}" alt="Overcoat Đen Tuyền">
+        </div>
+        <div class="col-trio-body">
+          <span class="col-tag">Look 01</span>
+          <h3>Overcoat Dạ Ép Đen Tuyền</h3>
+          <p>Dáng dài tối giản, phối chuẩn cùng áo cổ lọ và quần tây đứng phom.</p>
+        </div>
+      </a>
+
+      <a href="{{ url_for('cua_hang', danh_muc='ao-khoac') }}" class="col-trio-card">
+        <div class="col-trio-media">
+          <img src="{{ url_for('static', filename='img/look_trench.jpg') }}" alt="Măng Tô Dạ Olive">
+        </div>
+        <div class="col-trio-body">
+          <span class="col-tag">Look 02</span>
+          <h3>Măng Tô Dạ Xanh Olive</h3>
+          <p>Chi tiết đai thắt eo cân bằng tỷ lệ cơ thể cùng gam màu trầm sang trọng.</p>
+        </div>
+      </a>
+
+      <a href="{{ url_for('cua_hang', danh_muc='ao-khoac') }}" class="col-trio-card">
+        <div class="col-trio-media">
+          <img src="{{ url_for('static', filename='img/look_camel_coat.jpg') }}" alt="Áo Khoác Dạ Camel">
+        </div>
+        <div class="col-trio-body">
+          <span class="col-tag">Look 03</span>
+          <h3>Áo Khoác Dạ Camel Smart Casual</h3>
+          <p>Phối layer linh hoạt cho phong cách thường nhật tinh tế và ấm áp.</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- 4. CHAPTER 03: BUSINESS SHIRTS & TROUSERS (REVERSE SPLIT) -->
+<section class="ed-section" id="chuong-3">
+  <div class="container col-split col-split-reverse">
+    <div class="col-copy">
+      <div class="chapter-num">Chapter 03 · Business Essentials</div>
+      <h2 class="col-heading">Chuẩn Mực Công Sở</h2>
+      <p>Sự lịch lãm đến từ những nền tảng tưởng chừng đơn giản nhất: một chiếc sơ mi trắng cổ áo dựng sắc nét, chất vải thoáng khí suốt cả ngày và chiếc quần âu giữ đường ly hoàn hảo sau nhiều giờ di chuyển.</p>
+      <div class="col-meta-list">
+        <div><strong>Sơ mi chủ đạo</strong><span>Poplin chống nhăn · Oxford · Linen tự nhiên</span></div>
+        <div><strong>Quần âu &amp; Kaki</strong><span>Co giãn 4 chiều · Giữ ly gọn gàng</span></div>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <a href="{{ url_for('cua_hang', danh_muc='ao-so-mi') }}" class="btn btn-black">Xem Áo Sơ Mi</a>
+        <a href="{{ url_for('cua_hang', danh_muc='quan-au') }}" class="btn btn-outline">Xem Quần Âu &amp; Kaki</a>
+      </div>
+    </div>
+
+    <div class="col-diptych">
+      <div class="col-diptych-item">
+        <img src="{{ url_for('static', filename='img/look_shirt_city.jpg') }}" alt="Sơ mi công sở chuẩn phom">
+        <span>Sơ Mi Công Sở</span>
+      </div>
+      <div class="col-diptych-item">
+        <img src="{{ url_for('static', filename='img/look_trouser_detail.jpg') }}" alt="Quần tây xếp ly đứng phom">
+        <span>Quần Âu Đứng Phom</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. DARK MATERIAL STORYTELLING STRIP -->
+<section class="material-band" aria-label="Câu chuyện chất liệu">
+  <div class="container">
+    <div class="ed-head" style="margin-bottom:36px">
+      <div>
+        <div class="ed-eyebrow" style="color:#A3A3A3">Chất liệu &amp; Cảm giác mặc</div>
+        <h2 class="ed-title" style="color:#FFFFFF">Tuyển Chọn Từ Sợi Tự Nhiên</h2>
+      </div>
+      <a href="{{ url_for('thuong_hieu') }}" class="ed-link" style="color:#FFFFFF;border-color:#FFFFFF">Tìm hiểu quy trình chế tác <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <div class="material-grid">
+      <div class="material-card">
+        <span class="material-idx">01</span>
+        <h3>Len Wool Tự Nhiên</h3>
+        <p>Sợi len chải mịn giúp giữ ấm nhẹ, phục hồi nếp nhanh và định hình phom vai, ve áo sắc nét.</p>
+      </div>
+      <div class="material-card">
+        <span class="material-idx">02</span>
+        <h3>Cotton Sợi Dài</h3>
+        <p>Bề mặt vải mịn thoáng, thấm hút tốt và hạn chế nhăn nhàu trong suốt lịch trình bận rộn.</p>
+      </div>
+      <div class="material-card">
+        <span class="material-idx">03</span>
+        <h3>Linen Thô Mộc</h3>
+        <p>Sợi thực vật tự nhiên mang lại cảm giác mát nhẹ đặc trưng, càng mặc càng mềm rủ tự nhiên.</p>
+      </div>
+      <div class="material-card">
+        <span class="material-idx">04</span>
+        <h3>Lụa Satin Mờ</h3>
+        <p>Độ rủ uyển chuyển và ánh sắc dịu tinh tế cho các thiết kế đầm xếp ly và trang phục dạ tiệc.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. CHAPTER 04: LIVE FEATURED PIECES FROM MONGODB -->
+<section class="ed-section" id="chuong-4">
+  <div class="container">
+    <div class="ed-head">
+      <div>
+        <div class="chapter-num" style="margin-bottom:4px">Chapter 04 · Shop The Collection</div>
+        <h2 class="ed-title">Thiết Kế Tiêu Biểu Trong Bộ Sưu Tập</h2>
+      </div>
+      <a href="{{ url_for('cua_hang') }}" class="ed-link">Xem tất cả sản phẩm <i class="bi bi-arrow-right"></i></a>
+    </div>
+
+    <div class="product-grid" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+      {% for sp in sp_noi_bat %}
+      {% set anh = (sp.hinh_anh[0] if sp.hinh_anh else 'prod_shirt_white.jpg') %}
+      {% set co_giam = sp.gia_goc and sp.gia_goc > sp.don_gia %}
+      {% set pct = (((sp.gia_goc - sp.don_gia) * 100) // sp.gia_goc) if co_giam else 0 %}
+      <article class="product-card">
+        <a href="{{ url_for('chi_tiet_sp', ma_sp=sp._id) }}" class="product-media">
+          <img src="{{ url_for('static', filename='img/' ~ anh) }}" alt="{{ sp.ten_sp }}" loading="lazy">
+          {% if co_giam %}
+          <span class="prod-badge sale">-{{ pct }}%</span>
+          {% elif sp.bo_suu_tap == 'moi' %}
+          <span class="prod-badge">NEW</span>
+          {% endif %}
+          <span class="prod-quick">Xem chi tiết</span>
+        </a>
+        <div class="prod-info">
+          <div class="prod-cat">{{ ten_dm_map.get(sp.ma_dm, '') }}</div>
+          <a href="{{ url_for('chi_tiet_sp', ma_sp=sp._id) }}" class="prod-name">{{ sp.ten_sp }}</a>
+          <div class="prod-price">
+            <span class="{{ 'sale-val' if co_giam }}">{{ sp.don_gia|tien }}</span>
+            {% if co_giam %}<span class="old">{{ sp.gia_goc|tien }}</span>{% endif %}
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}

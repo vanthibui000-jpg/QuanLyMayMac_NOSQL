@@ -1,0 +1,56 @@
+{% extends "store/_tai_khoan_layout.html" %}
+{% set tk_tab = 'yeu_thich' %}
+{% set tk_crumb = 'Sản phẩm yêu thích' %}
+{% block tieu_de %}Sản phẩm yêu thích{% endblock %}
+{% block tk_noi_dung %}
+
+<div class="acc-head">
+  <div>
+    <h1>Sản phẩm yêu thích ({{ ds_sp|length }})</h1>
+    <p class="acc-sub">Danh sách thiết kế bạn đã lưu vào tài khoản — luôn đồng bộ mỗi khi đăng nhập.</p>
+  </div>
+  <a href="{{ url_for('cua_hang') }}" class="btn btn-outline btn-sm">Khám phá thêm</a>
+</div>
+
+{% if ds_sp %}
+<div class="product-grid" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+  {% for sp in ds_sp %}
+  {% set anh = (sp.hinh_anh[0] if sp.hinh_anh else 'prod_shirt_white.jpg') %}
+  {% set co_giam = sp.gia_goc and sp.gia_goc > sp.don_gia %}
+  {% set pct = (((sp.gia_goc - sp.don_gia) * 100) // sp.gia_goc) if co_giam else 0 %}
+  <article class="product-card">
+    <a href="{{ url_for('chi_tiet_sp', ma_sp=sp._id) }}" class="product-media">
+      <img src="{{ url_for('static', filename='img/' ~ anh) }}" alt="{{ sp.ten_sp }}" loading="lazy">
+      {% if co_giam %}
+      <span class="prod-badge sale">-{{ pct }}%</span>
+      {% elif sp.bo_suu_tap == 'moi' %}
+      <span class="prod-badge">NEW</span>
+      {% endif %}
+      <span class="prod-quick">Chọn màu &amp; size</span>
+    </a>
+    <div class="prod-info">
+      <div class="prod-cat">{{ ten_dm_map.get(sp.ma_dm, '') }} · {{ 'Còn ' ~ sp.tong_ton ~ ' sp' if sp.tong_ton > 0 else 'Tạm hết hàng' }}</div>
+      <a href="{{ url_for('chi_tiet_sp', ma_sp=sp._id) }}" class="prod-name">{{ sp.ten_sp }}</a>
+      <div class="prod-price">
+        <span class="{{ 'sale-val' if co_giam }}">{{ sp.don_gia|tien }}</span>
+        {% if co_giam %}<span class="old">{{ sp.gia_goc|tien }}</span>{% endif %}
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+        <a href="{{ url_for('chi_tiet_sp', ma_sp=sp._id) }}" class="btn btn-black btn-sm" style="padding:8px 14px">Mua ngay</a>
+        <form method="post" action="{{ url_for('tai_khoan_bo_yeu_thich', ma_sp=sp._id) }}">
+          <button type="submit" class="btn btn-outline btn-sm" style="padding:8px 12px" title="Bỏ yêu thích"><i class="bi bi-trash"></i></button>
+        </form>
+      </div>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="acc-empty">
+  <i class="bi bi-heart"></i>
+  <p>Bạn chưa lưu sản phẩm yêu thích nào. Hãy bấm biểu tượng trái tim trên sản phẩm bạn quan tâm.</p>
+  <a href="{{ url_for('cua_hang') }}" class="btn btn-black btn-sm">Sang tab Sản phẩm</a>
+</div>
+{% endif %}
+
+{% endblock %}

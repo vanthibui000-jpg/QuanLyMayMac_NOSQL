@@ -1,0 +1,60 @@
+{% extends "store/base_store.html" %}
+{% block tieu_de %}Sản phẩm yêu thích{% endblock %}
+{% block noi_dung %}
+
+<div class="page-banner">
+  <div class="container">
+    <div class="crumb"><a href="{{ url_for('trang_chu') }}">Trang chủ</a> <span>/</span> <span>Sản phẩm yêu thích</span></div>
+    <div class="catalog-head">
+      <h1>Sản phẩm yêu thích <span class="catalog-count">({{ ds_sp|length }} thiết kế)</span></h1>
+      <a href="{{ url_for('dang_nhap', next=url_for('tai_khoan_yeu_thich')) }}" class="btn btn-black btn-sm">Đăng nhập để đồng bộ</a>
+    </div>
+  </div>
+</div>
+
+<div class="container" style="padding-top:36px;padding-bottom:72px">
+  <div style="border:1px solid var(--border);background:var(--surface-alt);padding:14px 18px;margin-bottom:28px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:13px">
+    <span>Danh sách yêu thích đang được lưu tạm trong phiên hiện tại. Đăng nhập tài khoản Khách hàng để lưu vĩnh viễn vào hồ sơ của bạn.</span>
+    <a href="{{ url_for('dang_nhap', next=url_for('tai_khoan_yeu_thich')) }}" class="ed-link">Đăng nhập ngay</a>
+  </div>
+
+  {% if ds_sp %}
+  <div class="product-grid" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+    {% for sp in ds_sp %}
+    {% set anh = (sp.hinh_anh[0] if sp.hinh_anh else 'prod_shirt_white.jpg') %}
+    {% set co_giam = sp.gia_goc and sp.gia_goc > sp.don_gia %}
+    {% set pct = (((sp.gia_goc - sp.don_gia) * 100) // sp.gia_goc) if co_giam else 0 %}
+    <article class="product-card">
+      <a href="{{ url_for('chi_tiet_sp', ma_sp=sp._id) }}" class="product-media">
+        <img src="{{ url_for('static', filename='img/' ~ anh) }}" alt="{{ sp.ten_sp }}" loading="lazy">
+        {% if co_giam %}
+        <span class="prod-badge sale">-{{ pct }}%</span>
+        {% elif sp.bo_suu_tap == 'moi' %}
+        <span class="prod-badge">NEW</span>
+        {% endif %}
+        <button type="button" class="prod-wish saved" data-wish="{{ sp._id }}" aria-label="Bỏ yêu thích {{ sp.ten_sp }}">
+          <i class="bi bi-heart-fill"></i>
+        </button>
+        <span class="prod-quick">Chọn màu &amp; size</span>
+      </a>
+      <div class="prod-info">
+        <div class="prod-cat">{{ ten_dm_map.get(sp.ma_dm, '') }}</div>
+        <a href="{{ url_for('chi_tiet_sp', ma_sp=sp._id) }}" class="prod-name">{{ sp.ten_sp }}</a>
+        <div class="prod-price">
+          <span class="{{ 'sale-val' if co_giam }}">{{ sp.don_gia|tien }}</span>
+          {% if co_giam %}<span class="old">{{ sp.gia_goc|tien }}</span>{% endif %}
+        </div>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="acc-empty">
+    <i class="bi bi-heart"></i>
+    <p>Bạn chưa lưu sản phẩm yêu thích nào.</p>
+    <a href="{{ url_for('cua_hang') }}" class="btn btn-black btn-sm">Khám phá sản phẩm</a>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

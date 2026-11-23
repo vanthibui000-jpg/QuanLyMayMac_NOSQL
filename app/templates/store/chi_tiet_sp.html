@@ -1,0 +1,300 @@
+{% extends "store/base_store.html" %}
+{% block tieu_de %}{{ sp.ten_sp }}{% endblock %}
+{% block noi_dung %}
+
+{% set anh_list = sp.hinh_anh if sp.hinh_anh else ['prod_shirt_white.jpg'] %}
+{% set co_giam = sp.gia_goc and sp.gia_goc > sp.don_gia %}
+{% set pct = (((sp.gia_goc - sp.don_gia) * 100) // sp.gia_goc) if co_giam else 0 %}
+{% set da_thich = sp._id in yeu_thich_ids %}
+
+<div class="page-banner" style="padding:18px 0">
+  <div class="container">
+    <div class="crumb" style="margin:0">
+      <a href="{{ url_for('trang_chu') }}">Trang chủ</a>
+      <span>/</span>
+      <a href="{{ url_for('cua_hang') }}">Sản phẩm</a>
+      {% if dm %}
+      <span>/</span>
+      <a href="{{ url_for('cua_hang', danh_muc=dm.slug) }}">{{ dm.ten_dm }}</a>
+      {% endif %}
+      <span>/</span>
+      <span>{{ sp.ten_sp }}</span>
+    </div>
+  </div>
+</div>
+
+<div class="container detail-layout">
+  <div class="detail-gallery">
+    <div class="detail-thumbs">
+      {% for a in anh_list %}
+      <button type="button" class="detail-thumb{{ ' active' if loop.first }}" data-src="{{ url_for('static', filename='img/' ~ a) }}">
+        <img src="{{ url_for('static', filename='img/' ~ a) }}" alt="{{ sp.ten_sp }} ảnh {{ loop.index }}">
+      </button>
+      {% endfor %}
+    </div>
+    <div class="detail-main">
+      <img id="detail-main-img" src="{{ url_for('static', filename='img/' ~ anh_list[0]) }}" alt="{{ sp.ten_sp }}">
+    </div>
+  </div>
+
+  <div>
+    <div class="detail-sku">{{ sp._id }} · {{ dm.ten_dm if dm else 'Thời trang' }}</div>
+    <h1 class="detail-title">{{ sp.ten_sp }}</h1>
+
+    <div class="detail-rating-bar">
+      <a href="#danh-gia" class="star-summary-link">
+        <span class="star-row">
+          {% for i in range(1, 6) %}<i class="bi bi-star{{ '-fill' if i <= (danh_gia.trung_binh|round(0, 'floor')|int) }}"></i>{% endfor %}
+        </span>
+        {% if danh_gia.tong %}
+        <strong>{{ danh_gia.trung_binh }}</strong>
+        <span>({{ danh_gia.tong }} đánh giá đã mua hàng)</span>
+        {% else %}
+        <span>Chưa có đánh giá</span>
+        {% endif %}
+      </a>
+    </div>
+
+    <div class="detail-price">
+      <span class="now{{ ' sale' if co_giam }}">{{ sp.don_gia|tien }}</span>
+      {% if co_giam %}
+      <span class="old">{{ sp.gia_goc|tien }}</span>
+      <span class="off">-{{ pct }}%</span>
+      {% endif %}
+    </div>
+
+    <form method="post" action="{{ url_for('gio_hang_them') }}" id="form-add-cart">
+      <input type="hidden" name="ma_sp" value="{{ sp._id }}">
+      <input type="hidden" name="mau" id="inp-mau" value="{{ mau_mac_dinh }}">
+      <input type="hidden" name="size" id="inp-size" value="{{ size_mac_dinh }}">
+
+      <div class="variant-block">
+        <div class="variant-label">
+          <span>Màu sắc: <strong id="mau-selected">{{ mau_mac_dinh }}</strong></span>
+        </div>
+        <div class="variant-options">
+          {% for m in ds_mau %}
+          <button type="button" class="var-btn{{ ' active' if m == mau_mac_dinh }}" data-pick-mau="{{ m }}">{{ m }}</button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="variant-block">
+        <div class="variant-label">
+          <span>Kích cỡ: <strong id="size-selected">{{ size_mac_dinh }}</strong></span>
+          <button type="button" class="size-guide-trigger" id="btn-open-size-guide">
+            <i class="bi bi-rulers"></i> Hướng dẫn chọn size
+          </button>
+        </div>
+        <div class="variant-options">
+          {% for s in ds_size %}
+          <button type="button" class="var-btn{{ ' active' if s == size_mac_dinh }}" data-pick-size="{{ s }}">{{ s }}</button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="stock-line ok" id="stock-status">Đang kiểm tra tồn kho…</div>
+
+      <div class="qty-actions">
+        <div class="qty-box">
+          <button type="button" id="qty-dec" aria-label="Giảm">−</button>
+          <input type="number" name="so_luong" id="inp-qty" value="1" min="1" max="99" aria-label="Số lượng">
+          <button type="button" id="qty-inc" aria-label="Tăng">+</button>
+        </div>
+        <button type="submit" name="hanh_dong" value="them" class="btn btn-black" id="btn-add-cart">
+          <i class="bi bi-bag-plus"></i> Thêm vào giỏ hàng
+        </button>
+      </div>
+
+      <div class="detail-cta-row">
+        <button type="submit" name="hanh_dong" value="mua_ngay" class="btn btn-crimson" id="btn-buy-now" style="flex:1">
+          Mua ngay
+        </button>
+        <button type="button" class="btn btn-outline detail-wish-btn{{ ' saved' if da_thich }}" data-wish="{{ sp._id }}" data-wish-label="1">
+          <i class="bi bi-heart{{ '-fill' if da_thich }}"></i>
+          <span>{{ 'Đã yêu thích' if da_thich else 'Yêu thích' }}</span>
+        </button>
+      </div>
+    </form>
+
+    <div class="detail-specs">
+      <div class="spec-row"><strong>Form dáng</strong><span>{{ sp.form_dang or 'Regular Fit' }}</span></div>
+      <div class="spec-row"><strong>Chất liệu</strong><span>{{ sp.chat_lieu or 'Cotton tự nhiên cao cấp' }}</span></div>
+      <div class="spec-row"><strong>Mô tả</strong><span>{{ sp.mo_ta or 'Thiết kế tối giản chuẩn mực, đường may tinh xảo và thoáng nhẹ suốt ngày dài.' }}</span></div>
+      <div class="spec-row"><strong>Vận chuyển</strong><span>Miễn phí vận chuyển toàn quốc cho đơn hàng từ 500.000 ₫</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- VERIFIED CUSTOMER REVIEWS SECTION -->
+<section class="review-section" id="danh-gia">
+  <div class="container">
+    <div class="ed-head" style="margin-bottom:28px">
+      <div>
+        <div class="ed-eyebrow">Đánh giá từ khách đã mua</div>
+        <h2 class="ed-title">Nhận Xét Sản Phẩm ({{ danh_gia.tong }})</h2>
+      </div>
+    </div>
+
+    <div class="review-layout">
+      <div class="review-summary-box">
+        <div class="review-score-big">{{ danh_gia.trung_binh if danh_gia.tong else '—' }}<span>/5</span></div>
+        <div class="star-row" style="font-size:16px;margin:6px 0">
+          {% for i in range(1, 6) %}<i class="bi bi-star{{ '-fill' if i <= (danh_gia.trung_binh|round(0, 'floor')|int) }}"></i>{% endfor %}
+        </div>
+        <div style="font-size:12px;color:#666666;margin-bottom:18px">Dựa trên {{ danh_gia.tong }} đánh giá xác thực</div>
+
+        <div class="rating-bars">
+          {% for s in [5, 4, 3, 2, 1] %}
+          {% set sl = danh_gia.phan_bo.get(s, 0) %}
+          {% set pt = ((sl * 100) // danh_gia.tong) if danh_gia.tong else 0 %}
+          <div class="rating-bar-row">
+            <span>{{ s }} ★</span>
+            <div class="rating-bar-track"><span style="width:{{ pt }}%"></span></div>
+            <em>{{ sl }}</em>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div>
+        {% if co_the_danh_gia %}
+        <form method="post" action="{{ url_for('gui_danh_gia', ma_sp=sp._id) }}" class="review-form-box">
+          <h3>{{ 'Cập nhật đánh giá của bạn' if danh_gia_cua_toi else 'Viết đánh giá của bạn' }}</h3>
+          <div class="review-form-row">
+            <div class="form-group">
+              <label for="so_sao">Đánh giá sao *</label>
+              <select id="so_sao" name="so_sao" class="form-control">
+                {% set sao_ht = (danh_gia_cua_toi.so_sao if danh_gia_cua_toi else 5) %}
+                <option value="5" {{ 'selected' if sao_ht == 5 }}>5 sao — Rất hài lòng</option>
+                <option value="4" {{ 'selected' if sao_ht == 4 }}>4 sao — Hài lòng</option>
+                <option value="3" {{ 'selected' if sao_ht == 3 }}>3 sao — Bình thường</option>
+                <option value="2" {{ 'selected' if sao_ht == 2 }}>2 sao — Chưa ưng ý</option>
+                <option value="1" {{ 'selected' if sao_ht == 1 }}>1 sao — Không hài lòng</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="phom_dang">Cảm nhận phom dáng</label>
+              <select id="phom_dang" name="phom_dang" class="form-control">
+                {% set phom_ht = (danh_gia_cua_toi.phom_dang if danh_gia_cua_toi else 'Vừa vặn') %}
+                {% for p in phom_danh_gia %}
+                <option value="{{ p }}" {{ 'selected' if phom_ht == p }}>{{ p }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="noi_dung">Nhận xét về chất liệu, đường may, phom dáng *</label>
+            <textarea id="noi_dung" name="noi_dung" class="form-control" rows="3" required minlength="5" maxlength="1000" placeholder="Chia sẻ trải nghiệm thực tế sau khi mặc...">{{ danh_gia_cua_toi.noi_dung if danh_gia_cua_toi else '' }}</textarea>
+          </div>
+          <button type="submit" class="btn btn-black btn-sm">{{ 'Lưu cập nhật đánh giá' if danh_gia_cua_toi else 'Gửi đánh giá' }}</button>
+        </form>
+        {% elif nguoi_dung and nguoi_dung.vai_tro == 'KH' %}
+        <div class="review-notice">
+          <i class="bi bi-patch-check"></i>
+          <span>Chỉ khách hàng đã hoàn thành đơn mua sản phẩm này mới có thể viết đánh giá nhằm đảm bảo tính xác thực.</span>
+        </div>
+        {% else %}
+        <div class="review-notice">
+          <i class="bi bi-person-check"></i>
+          <span>Vui lòng <a href="{{ url_for('dang_nhap', next=url_for('chi_tiet_sp', ma_sp=sp._id)) }}" class="ed-link">đăng nhập tài khoản Khách hàng</a> đã mua sản phẩm để gửi đánh giá.</span>
+        </div>
+        {% endif %}
+
+        {% if danh_gia.ds %}
+        <div class="review-list" style="margin-top:20px">
+          {% for dg in danh_gia.ds %}
+          <article class="review-item">
+            <div class="review-item-head">
+              <div>
+                <strong>{{ dg.ten_kh }}</strong>
+                <span class="verified-buy"><i class="bi bi-patch-check-fill"></i> Đã mua hàng</span>
+                <div class="star-row" style="margin-top:4px">
+                  {% for i in range(1, 6) %}<i class="bi bi-star{{ '-fill' if i <= dg.so_sao }}"></i>{% endfor %}
+                  <span class="fit-pill">Phom: {{ dg.phom_dang or 'Vừa vặn' }}</span>
+                </div>
+              </div>
+              <span style="font-size:12px;color:#666666">{{ dg.ngay_tao|ngay }}</span>
+            </div>
+            <p class="review-body">{{ dg.noi_dung }}</p>
+          </article>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="acc-empty" style="margin-top:20px;padding:36px 20px">
+          <p style="margin:0">Chưa có đánh giá nào cho thiết kế này. Hãy là người đầu tiên chia sẻ cảm nhận sau khi nhận hàng.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if lien_quan %}
+<section class="ed-section-tight" style="border-top:1px solid var(--border);padding-bottom:72px">
+  <div class="container">
+    <div class="ed-head">
+      <div>
+        <div class="ed-eyebrow">Gợi ý phối đồ</div>
+        <h2 class="ed-title">Sản phẩm liên quan</h2>
+      </div>
+      <a href="{{ url_for('cua_hang', danh_muc=dm.slug if dm else None) }}" class="ed-link">Xem tất cả</a>
+    </div>
+    <div class="product-grid" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+      {% for r in lien_quan %}
+      {% set r_anh = (r.hinh_anh[0] if r.hinh_anh else 'prod_shirt_white.jpg') %}
+      <article class="product-card">
+        <a href="{{ url_for('chi_tiet_sp', ma_sp=r._id) }}" class="product-media">
+          <img src="{{ url_for('static', filename='img/' ~ r_anh) }}" alt="{{ r.ten_sp }}" loading="lazy">
+        </a>
+        <div class="prod-info">
+          <a href="{{ url_for('chi_tiet_sp', ma_sp=r._id) }}" class="prod-name">{{ r.ten_sp }}</a>
+          <div class="prod-price"><span>{{ r.don_gia|tien }}</span></div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- SIZE GUIDE MODAL -->
+<div class="store-modal-backdrop" id="size-guide-modal" aria-hidden="true">
+  <div class="store-modal store-modal-lg" role="dialog" aria-modal="true" aria-labelledby="size-guide-title">
+    <div class="store-modal-head">
+      <h3 id="size-guide-title">Bảng hướng dẫn chọn Size chuẩn phom Á Đông</h3>
+      <button type="button" class="drawer-close" data-close-modal="size-guide-modal" aria-label="Đóng">&times;</button>
+    </div>
+    <div class="store-modal-body">
+      <p style="margin:0 0 16px;font-size:13px;color:#525252">Nếu số đo của bạn nằm giữa 2 kích cỡ, ưu tiên chọn lớn hơn 1 size nếu thích mặc thoải mái (Regular / Relaxed) hoặc giữ đúng size nếu thích phom gọn (Slim / Tailored).</p>
+      <div style="overflow-x:auto">
+        <table class="size-table">
+          <thead>
+            <tr>
+              <th>Size</th>
+              <th>Chiều cao (cm)</th>
+              <th>Cân nặng (kg)</th>
+              <th>Vòng ngực (cm)</th>
+              <th>Vòng eo (cm)</th>
+              <th>Vai (cm)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>S</strong></td><td>160 – 166</td><td>52 – 59</td><td>86 – 90</td><td>72 – 76</td><td>42 – 43</td></tr>
+            <tr><td><strong>M</strong></td><td>166 – 172</td><td>60 – 67</td><td>91 – 95</td><td>77 – 81</td><td>44 – 45</td></tr>
+            <tr><td><strong>L</strong></td><td>172 – 178</td><td>68 – 75</td><td>96 – 100</td><td>82 – 86</td><td>46 – 47</td></tr>
+            <tr><td><strong>XL</strong></td><td>178 – 183</td><td>76 – 84</td><td>101 – 106</td><td>87 – 92</td><td>48 – 49</td></tr>
+            <tr><td><strong>XXL</strong></td><td>183 – 188</td><td>85 – 93</td><td>107 – 112</td><td>93 – 98</td><td>50 – 51</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin:14px 0 0;font-size:12px;color:#666666">Hỗ trợ đổi màu &amp; đổi size miễn phí trong vòng 30 ngày kể từ khi nhận hàng.</p>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script id="bien-the-data" type="application/json">{{ sp.bien_the|tojson }}</script>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends "store/_tai_khoan_layout.html" %}
+{% set tk_tab = 'tong_quan' %}
+{% set tk_crumb = '' %}
+{% block tieu_de %}Tài khoản khách hàng{% endblock %}
+{% block tk_noi_dung %}
+
+<div class="acc-head">
+  <div>
+    <div class="ed-eyebrow" style="margin-bottom:4px">Cổng thành viên</div>
+    <h1>Xin chào, {{ tk.khach.ten_kh }}</h1>
+  </div>
+  <div class="acc-actions">
+    <a href="{{ url_for('tai_khoan_ho_so') }}" class="btn btn-outline btn-sm">Sửa thông tin cá nhân</a>
+    <a href="{{ url_for('cua_hang') }}" class="btn btn-black btn-sm">Mua sắm ngay</a>
+  </div>
+</div>
+
+<div class="kpi-strip acc-kpi-strip">
+  <div class="kpi-box"><div class="k-lbl">Tổng đơn hàng</div><div class="k-val">{{ tk.so_don_tong }}</div></div>
+  <div class="kpi-box"><div class="k-lbl">Đang xử lý / giao</div><div class="k-val">{{ tk.so_dang_xu_ly }}</div></div>
+  <div class="kpi-box"><div class="k-lbl">Tổng giá trị đã đặt</div><div class="k-val">{{ tong_chi|tien }}</div></div>
+  <div class="kpi-box"><div class="k-lbl">Sản phẩm yêu thích</div><div class="k-val">{{ tk.so_yeu_thich }}</div></div>
+</div>
+
+<div class="acc-tier-banner">
+  <div>
+    <div class="acc-tier-kicker">Đặc quyền {{ tk.hang.ten }}</div>
+    <p>{{ tk.hang.quyen_loi }}</p>
+  </div>
+  <div class="acc-tier-meta">
+    <span>Chi tiêu hoàn thành: <strong>{{ tk.hang.tong_chi|tien }}</strong></span>
+  </div>
+</div>
+
+<div class="acc-section-head">
+  <h2>Đơn hàng gần đây</h2>
+  <a href="{{ url_for('tai_khoan_don_hang') }}" class="ed-link">Xem tất cả ({{ tk.so_don_tong }}) <i class="bi bi-arrow-right"></i></a>
+</div>
+
+{% if don_gan %}
+<div class="order-card-list">
+  {% for d in don_gan %}
+  <article class="order-card">
+    <div class="order-card-head">
+      <div class="order-card-id">
+        <a href="{{ url_for('tai_khoan_don', ma_don=d._id) }}"><strong>{{ d._id }}</strong></a>
+        <span>· {{ d.ngay_dat|ngay }}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span style="font-size:12px;color:#666666">{{ d.phuong_thuc_tt }} · {{ d.trang_thai_tt|trang_thai_tt }}</span>
+        <span class="status-pill {{ trang_thai_lop.get(d.trang_thai, '') }}">{{ d.trang_thai|trang_thai }}</span>
+      </div>
+    </div>
+
+    <div class="order-card-items">
+      {% for ct in d.chi_tiet[:2] %}
+      <div class="order-line">
+        <img class="cart-thumb" style="width:52px;height:68px" src="{{ url_for('static', filename='img/' ~ (ct.hinh_anh or 'prod_shirt_white.jpg')) }}" alt="{{ ct.ten_sp }}">
+        <div class="order-line-info">
+          <a href="{{ url_for('chi_tiet_sp', ma_sp=ct.ma_sp) }}" class="order-line-name">{{ ct.ten_sp }}</a>
+          <div class="order-line-meta">{{ ct.mau }} · Size {{ ct.size }} × {{ ct.so_luong }}</div>
+        </div>
+        <div class="order-line-price">{{ (ct.so_luong * ct.don_gia)|tien }}</div>
+      </div>
+      {% endfor %}
+      {% if d.chi_tiet|length > 2 %}
+      <div class="order-more">+ {{ d.chi_tiet|length - 2 }} sản phẩm khác trong đơn hàng này</div>
+      {% endif %}
+    </div>
+
+    <div class="order-card-foot">
+      <div class="order-total">Tổng cộng: <strong>{{ d.tong_tien|tien }}</strong></div>
+      <div class="order-card-actions">
+        <form method="post" action="{{ url_for('tai_khoan_mua_lai', ma_don=d._id) }}">
+          <button type="submit" class="btn btn-outline btn-sm">Mua lại</button>
+        </form>
+        <a href="{{ url_for('tai_khoan_don', ma_don=d._id) }}" class="btn btn-black btn-sm">Xem chi tiết</a>
+      </div>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="acc-empty">
+  <i class="bi bi-bag"></i>
+  <p>Bạn chưa có đơn hàng nào.</p>
+  <a href="{{ url_for('cua_hang') }}" class="btn btn-black btn-sm">Bắt đầu mua sắm</a>
+</div>
+{% endif %}
+
+<div class="acc-summary-grid">
+  <div class="acc-info-box">
+    <div class="acc-info-top">
+      <h3>Thông tin liên hệ</h3>
+      <a href="{{ url_for('tai_khoan_ho_so') }}" class="ed-link">Chỉnh sửa</a>
+    </div>
+    <p><strong>{{ tk.khach.ten_kh }}</strong></p>
+    <p>SĐT: {{ tk.khach.sdt }}</p>
+    {% if tk.khach.email %}<p>Email: {{ tk.khach.email }}</p>{% endif %}
+  </div>
+
+  <div class="acc-info-box">
+    <div class="acc-info-top">
+      <h3>Địa chỉ giao hàng mặc định</h3>
+      <a href="{{ url_for('tai_khoan_dia_chi') }}" class="ed-link">Quản lý ({{ tk.so_dia_chi }})</a>
+    </div>
+    {% if dia_chi_mac_dinh %}
+    <p><strong>{{ dia_chi_mac_dinh.ho_ten }}</strong> · {{ dia_chi_mac_dinh.sdt }}</p>
+    <p>{{ dia_chi_mac_dinh.dia_chi }}</p>
+    {% else %}
+    <p style="color:#666666">Chưa lưu địa chỉ giao hàng mặc định.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

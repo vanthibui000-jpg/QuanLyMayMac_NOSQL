@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block tieu_de %}Thời trang cao cấp{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='store.css') }}">
+</head>
+<body>
+  <!-- TOP ANNOUNCEMENT BAR -->
+  <div class="announce-bar">
+    <div class="container announce-inner">
+      <div class="announce-msg">
+        <span>FINAL SALE ĐẾN 35%</span>
+        <span class="announce-dot">·</span>
+        <span>MIỄN PHÍ VẬN CHUYỂN TỪ 500.000 ₫</span>
+      </div>
+      <div class="announce-links">
+        {% if nguoi_dung and nguoi_dung.vai_tro in ('ADMIN', 'NV') %}
+          <a href="{{ url_for('admin_dashboard') }}" class="announce-admin"><i class="bi bi-speedometer2"></i> QUẢN TRỊ ({{ nguoi_dung.vai_tro }})</a>
+          <span>|</span>
+        {% endif %}
+        <span>HOTLINE 1800 6226</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2-TIER STOREFRONT HEADER -->
+  <header class="site-header">
+    <div class="header-tier1">
+      <div class="container header-tier1-inner">
+        <nav class="primary-nav" aria-label="Điều hướng chính">
+          <a href="{{ url_for('trang_chu') }}" class="{{ 'active' if request.endpoint == 'trang_chu' }}">Trang chủ</a>
+          <a href="{{ url_for('cua_hang') }}" class="{{ 'active' if request.endpoint in ('cua_hang', 'chi_tiet_sp') }}">Sản phẩm</a>
+          <a href="{{ url_for('bo_suu_tap') }}" class="{{ 'active' if request.endpoint == 'bo_suu_tap' }}">Bộ sưu tập</a>
+          <a href="{{ url_for('thuong_hieu') }}" class="{{ 'active' if request.endpoint == 'thuong_hieu' }}">Thương hiệu</a>
+        </nav>
+
+        <div class="header-tools">
+          <button type="button" class="tool-btn" id="btn-search-toggle" aria-label="Tìm kiếm sản phẩm">
+            <i class="bi bi-search"></i>
+          </button>
+
+          {% if nguoi_dung %}
+            {% if nguoi_dung.vai_tro == 'KH' %}
+            <div class="acc-dropdown" id="store-acc-dropdown">
+              <button type="button" class="tool-btn" id="btn-acc-menu" aria-label="Menu tài khoản khách hàng" aria-haspopup="true" aria-expanded="false">
+                <i class="bi bi-person"></i>
+                <span class="tool-label">{{ nguoi_dung.ten }}</span>
+                <i class="bi bi-chevron-down" style="font-size:10px"></i>
+              </button>
+              <div class="acc-dropdown-menu" role="menu">
+                <div class="acc-dd-head">
+                  <strong>{{ nguoi_dung.ho_ten }}</strong>
+                  <span>Khách hàng (KH)</span>
+                </div>
+                <a href="{{ url_for('tai_khoan') }}" role="menuitem"><i class="bi bi-grid"></i> Tổng quan tài khoản</a>
+                <a href="{{ url_for('tai_khoan_don_hang') }}" role="menuitem"><i class="bi bi-bag-check"></i> Đơn hàng của tôi</a>
+                <a href="{{ url_for('tai_khoan_yeu_thich') }}" role="menuitem"><i class="bi bi-heart"></i> Sản phẩm yêu thích</a>
+                <a href="{{ url_for('tai_khoan_dia_chi') }}" role="menuitem"><i class="bi bi-geo-alt"></i> Sổ địa chỉ</a>
+                <a href="{{ url_for('tai_khoan_danh_gia') }}" role="menuitem"><i class="bi bi-star"></i> Đánh giá của tôi</a>
+                <a href="{{ url_for('tai_khoan_ho_so') }}" role="menuitem"><i class="bi bi-person-gear"></i> Thông tin cá nhân</a>
+                <form method="post" action="{{ url_for('dang_xuat') }}" class="acc-dd-logout">
+                  <button type="submit" role="menuitem"><i class="bi bi-box-arrow-right"></i> Đăng xuất</button>
+                </form>
+              </div>
+            </div>
+            {% else %}
+            <a href="{{ url_for('admin_dashboard') }}" class="tool-btn" aria-label="Cổng quản trị">
+              <i class="bi bi-shield-lock"></i>
+              <span class="tool-label">{{ nguoi_dung.ten }} ({{ nguoi_dung.vai_tro }})</span>
+            </a>
+            {% endif %}
+          {% else %}
+            <a href="{{ url_for('dang_nhap') }}" class="tool-btn" aria-label="Đăng nhập">
+              <i class="bi bi-person"></i>
+              <span class="tool-label">Đăng nhập</span>
+            </a>
+          {% endif %}
+
+          <a href="{{ url_for('tai_khoan_yeu_thich') if (nguoi_dung and nguoi_dung.vai_tro == 'KH') else url_for('yeu_thich_cong_khai') }}" class="tool-btn" aria-label="Sản phẩm yêu thích">
+            <i class="bi bi-heart"></i>
+            <span class="tool-badge{{ ' sale' if yeu_thich_ids|length > 0 }}" id="wish-badge"{% if not yeu_thich_ids %} style="display:none"{% endif %}>{{ yeu_thich_ids|length }}</span>
+          </a>
+
+          <button type="button" class="tool-btn" id="btn-cart-open" aria-label="Giỏ hàng">
+            <i class="bi bi-bag"></i>
+            <span class="tool-badge{{ ' sale' if gio_tom_tat.so_luong > 0 }}" id="cart-badge">{{ gio_tom_tat.so_luong }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-tier2">
+      <div class="container">
+        <nav class="cat-nav" aria-label="Danh mục sản phẩm">
+          <a href="{{ url_for('cua_hang', bo_suu_tap='sale') }}" class="sale-link{{ ' active' if request.args.get('bo_suu_tap') == 'sale' }}">Final Sale</a>
+          <a href="{{ url_for('cua_hang', bo_suu_tap='moi') }}" class="{{ 'active' if request.args.get('bo_suu_tap') == 'moi' }}">Hàng mới</a>
+          {% for dm in danh_muc_nav %}
+          <a href="{{ url_for('cua_hang', danh_muc=dm.slug) }}" class="{{ 'active' if request.args.get('danh_muc') == dm.slug }}">{{ dm.ten_dm }}</a>
+          {% endfor %}
+        </nav>
+      </div>
+    </div>
+
+    <div class="search-drawer" id="search-drawer">
+      <div class="container">
+        <form class="search-drawer-form" method="get" action="{{ url_for('cua_hang') }}">
+          <i class="bi bi-search" style="font-size:18px"></i>
+          <input type="search" name="q" value="{{ request.args.get('q', '') }}" placeholder="Tìm kiếm áo sơ mi, blazer, quần âu, măng tô…">
+          <button type="submit">Tìm kiếm</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    {% block noi_dung %}{% endblock %}
+  </main>
+
+  <!-- 4-POLICY BLACK STRIP -->
+  <section class="policy-strip" aria-label="Chính sách dịch vụ">
+    <div class="container policy-grid">
+      <div class="policy-item">
+        <i class="bi bi-patch-check"></i>
+        <div><strong>Chính hãng 100%</strong><span>Chuẩn phom dáng &amp; chất liệu cao cấp</span></div>
+      </div>
+      <div class="policy-item">
+        <i class="bi bi-truck"></i>
+        <div><strong>Miễn phí vận chuyển</strong><span>Cho mọi đơn hàng từ 500.000 ₫</span></div>
+      </div>
+      <div class="policy-item">
+        <i class="bi bi-arrow-repeat"></i>
+        <div><strong>Đổi trả 30 ngày</strong><span>Hỗ trợ đổi màu &amp; size toàn quốc</span></div>
+      </div>
+      <div class="policy-item">
+        <i class="bi bi-shield-check"></i>
+        <div><strong>Bảo hành 180 ngày</strong><span>Chỉnh sửa phom dáng miễn phí</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DARK FOOTER -->
+  <footer class="site-footer" id="footer-showroom">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-info">
+          <p><strong>HỆ THỐNG THỜI TRANG MAY ĐO CAO CẤP</strong></p>
+          <p>Mua sắm trực tuyến · Giao hàng nhanh toàn quốc</p>
+          <p>Hotline: 1800 6226 (08:30 – 21:30 hằng ngày)</p>
+          <div class="newsletter-title">Đăng ký nhận bản tin bộ sưu tập mới</div>
+          <form class="newsletter-form" id="newsletter-form">
+            <input type="email" placeholder="Nhập email của bạn..." required>
+            <button type="submit">Gửi</button>
+          </form>
+        </div>
+
+        <div class="footer-col">
+          <h4>Danh mục</h4>
+          <ul>
+            <li><a href="{{ url_for('cua_hang', bo_suu_tap='moi') }}">Bộ sưu tập mới</a></li>
+            <li><a href="{{ url_for('cua_hang', bo_suu_tap='sale') }}">Final Sale</a></li>
+            {% for dm in danh_muc_nav[:4] %}
+            <li><a href="{{ url_for('cua_hang', danh_muc=dm.slug) }}">{{ dm.ten_dm }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Chính sách</h4>
+          <ul>
+            <li><a href="{{ url_for('cua_hang') }}">Hướng dẫn chọn size</a></li>
+            <li><a href="{{ url_for('cua_hang') }}">Chính sách đổi trả 30 ngày</a></li>
+            <li><a href="{{ url_for('cua_hang') }}">Chính sách vận chuyển</a></li>
+            <li><a href="{{ url_for('cua_hang') }}">Chính sách bảo mật</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Tài khoản &amp; Hỗ trợ</h4>
+          <ul>
+            {% if nguoi_dung %}
+              {% if nguoi_dung.vai_tro == 'KH' %}
+              <li><a href="{{ url_for('tai_khoan_don_hang') }}">Đơn hàng của tôi</a></li>
+              <li><a href="{{ url_for('tai_khoan_yeu_thich') }}">Sản phẩm yêu thích</a></li>
+              <li><a href="{{ url_for('tai_khoan_dia_chi') }}">Sổ địa chỉ</a></li>
+              <li><a href="{{ url_for('tai_khoan_ho_so') }}">Thông tin cá nhân</a></li>
+              {% else %}
+              <li><a href="{{ url_for('admin_dashboard') }}">Trang quản trị (/admin)</a></li>
+              <li><a href="{{ url_for('admin_ho_so') }}">Hồ sơ cá nhân</a></li>
+              {% endif %}
+            {% else %}
+              <li><a href="{{ url_for('dang_nhap') }}">Đăng nhập</a></li>
+              <li><a href="{{ url_for('dang_ky') }}">Đăng ký thành viên</a></li>
+            {% endif %}
+            <li><a href="{{ url_for('gio_hang') }}">Giỏ hàng ({{ gio_tom_tat.so_luong }})</a></li>
+            <li><a href="{{ url_for('thanh_toan') }}">Thanh toán đơn hàng</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 Hệ thống Thời trang · Đồ án NoSQL MongoDB (3 vai trò: ADMIN · NV · KH)</span>
+        <div class="pay-badges">
+          <span>COD</span>
+          <span>CHUYỂN KHOẢN</span>
+          <span>VISA</span>
+          <span>MASTERCARD</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SLIDE-OUT CART DRAWER -->
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+  <aside class="cart-drawer" id="cart-drawer" aria-label="Giỏ hàng nhanh">
+    <div class="drawer-head">
+      <h3>Giỏ hàng ({{ gio_tom_tat.so_luong }})</h3>
+      <button type="button" class="drawer-close" id="btn-cart-close" aria-label="Đóng">&times;</button>
+    </div>
+    <div class="drawer-body">
+      {% for it in gio_tom_tat.ds_hang %}
+      <div class="drawer-item">
+        <img class="cart-thumb" src="{{ url_for('static', filename='img/' ~ it.hinh_anh) }}" alt="{{ it.ten_sp }}">
+        <div style="flex:1">
+          <div style="font-weight:700;margin-bottom:4px"><a href="{{ url_for('chi_tiet_sp', ma_sp=it.ma_sp) }}">{{ it.ten_sp }}</a></div>
+          <div style="font-size:12px;color:#666666;margin-bottom:6px">{{ it.mau }} · Size {{ it.size }}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:12px">SL: <strong>{{ it.so_luong }}</strong></span>
+            <strong>{{ it.thanh_tien|tien }}</strong>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <p style="color:#666666;text-align:center;margin-top:48px">Giỏ hàng của bạn đang trống.</p>
+      <p style="text-align:center"><a href="{{ url_for('cua_hang') }}" class="btn btn-black btn-sm">Khám phá sản phẩm</a></p>
+      {% endfor %}
+    </div>
+    {% if gio_tom_tat.ds_hang %}
+    <div class="drawer-foot">
+      <div class="sum-row" style="font-weight:700;font-size:15px;margin-bottom:14px">
+        <span>Tạm tính</span>
+        <span>{{ gio_tom_tat.tam_tinh|tien }}</span>
+      </div>
+      <div style="display:grid;gap:8px">
+        <a href="{{ url_for('thanh_toan') }}" class="btn btn-black btn-block">Tiến hành thanh toán</a>
+        <a href="{{ url_for('gio_hang') }}" class="btn btn-outline btn-block btn-sm">Xem chi tiết giỏ hàng</a>
+      </div>
+    </div>
+    {% endif %}
+  </aside>
+
+  <!-- TOAST MESSAGES -->
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+  {% if msgs %}
+  <div class="store-toasts" aria-live="polite">
+    {% for loai, nd in msgs %}
+    <div class="store-toast {{ loai }}">
+      <span>{{ nd }}</span>
+      <button type="button" aria-label="Đóng">&times;</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <button type="button" class="back-top" id="back-top" aria-label="Lên đầu trang"><i class="bi bi-arrow-up"></i></button>
+
+  {% block scripts %}{% endblock %}
+  <script src="{{ url_for('static', filename='js/store.js') }}"></script>
+</body>
+</html>

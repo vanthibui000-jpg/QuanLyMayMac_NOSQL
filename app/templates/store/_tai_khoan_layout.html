@@ -1,0 +1,76 @@
+{% extends "store/base_store.html" %}
+{% block noi_dung %}
+
+<div class="page-banner" style="padding:20px 0">
+  <div class="container">
+    <div class="crumb" style="margin:0">
+      <a href="{{ url_for('trang_chu') }}">Trang chủ</a>
+      <span>/</span>
+      <a href="{{ url_for('tai_khoan') }}">Tài khoản của tôi</a>
+      {% if tk_crumb %}
+      <span>/</span>
+      <span>{{ tk_crumb }}</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="container account-shell">
+  <aside class="account-sidebar" aria-label="Menu tài khoản khách hàng">
+    <div class="member-card tier-{{ tk.hang.ma|lower }}">
+      <div class="member-top">
+        <span class="member-avatar" aria-hidden="true">{{ (tk.khach.ten_kh or 'K')[:1]|upper }}</span>
+        <div style="min-width:0">
+          <div class="member-name">{{ tk.khach.ten_kh }}</div>
+          <div class="member-code">{{ tk.khach._id }} · {{ nguoi_dung.ten }}</div>
+        </div>
+      </div>
+      <div class="member-tier-row">
+        <span class="member-tier-badge">{{ tk.hang.ten }}</span>
+        <span class="member-spend">{{ tk.hang.tong_chi|tien }}</span>
+      </div>
+      <div class="member-bar" aria-hidden="true">
+        <span style="width:{{ tk.hang.phan_tram }}%"></span>
+      </div>
+      {% if tk.hang.hang_tiep %}
+      <div class="member-hint">Mua thêm <strong>{{ tk.hang.con_thieu|tien }}</strong> để lên {{ tk.hang.hang_tiep }}</div>
+      {% else %}
+      <div class="member-hint">Bạn đang ở hạng thành viên cao nhất</div>
+      {% endif %}
+    </div>
+
+    <nav class="account-nav" aria-label="Danh mục tài khoản">
+      <a href="{{ url_for('tai_khoan') }}" class="{{ 'active' if tk_tab == 'tong_quan' }}">
+        <span><i class="bi bi-grid"></i> Tổng quan</span>
+      </a>
+      <a href="{{ url_for('tai_khoan_don_hang') }}" class="{{ 'active' if tk_tab == 'don_hang' }}">
+        <span><i class="bi bi-bag-check"></i> Đơn hàng của tôi</span>
+        {% if tk.so_don_tong %}<em class="acc-count">{{ tk.so_don_tong }}</em>{% endif %}
+      </a>
+      <a href="{{ url_for('tai_khoan_yeu_thich') }}" class="{{ 'active' if tk_tab == 'yeu_thich' }}">
+        <span><i class="bi bi-heart"></i> Sản phẩm yêu thích</span>
+        {% if tk.so_yeu_thich %}<em class="acc-count">{{ tk.so_yeu_thich }}</em>{% endif %}
+      </a>
+      <a href="{{ url_for('tai_khoan_dia_chi') }}" class="{{ 'active' if tk_tab == 'dia_chi' }}">
+        <span><i class="bi bi-geo-alt"></i> Sổ địa chỉ</span>
+        {% if tk.so_dia_chi %}<em class="acc-count">{{ tk.so_dia_chi }}</em>{% endif %}
+      </a>
+      <a href="{{ url_for('tai_khoan_danh_gia') }}" class="{{ 'active' if tk_tab == 'danh_gia' }}">
+        <span><i class="bi bi-star"></i> Đánh giá của tôi</span>
+        {% if tk.so_danh_gia %}<em class="acc-count">{{ tk.so_danh_gia }}</em>{% endif %}
+      </a>
+      <a href="{{ url_for('tai_khoan_ho_so') }}" class="{{ 'active' if tk_tab == 'ho_so' }}">
+        <span><i class="bi bi-person-gear"></i> Thông tin cá nhân</span>
+      </a>
+      <form method="post" action="{{ url_for('dang_xuat') }}" class="account-logout-form">
+        <button type="submit" class="account-logout-btn"><i class="bi bi-box-arrow-right"></i> Đăng xuất</button>
+      </form>
+    </nav>
+  </aside>
+
+  <section class="account-main">
+    {% block tk_noi_dung %}{% endblock %}
+  </section>
+</div>
+
+{% endblock %}

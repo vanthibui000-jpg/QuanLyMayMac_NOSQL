@@ -1,0 +1,195 @@
+{% extends "store/base_store.html" %}
+{% block tieu_de %}Thương hiệu{% endblock %}
+{% block noi_dung %}
+
+<!-- 1. FULL-BLEED CRAFTSMANSHIP HERO -->
+<section class="page-hero">
+  <img src="{{ url_for('static', filename='img/hero_02_atelier.jpg') }}" alt="Không gian chế tác và may đo">
+  <div class="page-hero-scrim"></div>
+  <div class="page-hero-inner">
+    <div class="container">
+      <div class="crumb crumb-light">
+        <a href="{{ url_for('trang_chu') }}">Trang chủ</a>
+        <span>/</span>
+        <span>Thương hiệu</span>
+      </div>
+      <div class="hero-eyebrow">Giá Trị &amp; Kỹ Nghệ Chế Tác</div>
+      <h1 class="page-hero-title">Chuẩn Mực Trong Từng Đường Kim</h1>
+      <p class="page-hero-desc">Chúng tôi theo đuổi thời trang bền vững về thẩm mỹ — tối giản, chuẩn phom dáng Á Đông và đồng hành cùng phong thái tự tin của bạn qua nhiều năm tháng.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 2. EDITORIAL PHILOSOPHY SPLIT -->
+<section class="ed-section">
+  <div class="container brand-split">
+    <div class="brand-copy">
+      <div class="chapter-num">Triết lý thiết kế</div>
+      <h2 class="col-heading">Tối Giản Để Tôn Vinh Khí Chất</h2>
+      <p>Thay vì chạy theo những trào lưu ngắn hạn, chúng tôi đặt trọng tâm vào <strong>tỷ lệ phom dáng</strong>, <strong>bề mặt chất liệu</strong> và <strong>độ hoàn thiện đường may</strong> — những yếu tố tạo nên vẻ sang trọng thầm lặng ngay từ ánh nhìn đầu tiên.</p>
+      <p>Mỗi mẫu rập đều được tinh chỉnh riêng theo nhân trắc học người Việt để bờ vai gọn gàng, vòng cổ ôm vừa vặn và ống quần thẳng đứng tự nhiên mà vẫn thoải mái khi vận động suốt ngày dài.</p>
+      <div class="brand-quote">
+        “Một bộ trang phục đẹp không cần lên tiếng ồn ào — chỉ cần vừa vặn hoàn hảo với người mặc.”
+      </div>
+    </div>
+    <div class="brand-photo-frame">
+      <img src="{{ url_for('static', filename='img/look_linen_rack.jpg') }}" alt="Tuyển chọn chất liệu tự nhiên">
+      <div class="brand-photo-cap">Chọn lọc từ sợi vải tự nhiên đến từng chi tiết khuy, chỉ và lớp lót bên trong.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. FULL-BLEED BLACK KPI STATS STRIP -->
+<section class="stats-band" aria-label="Những con số nổi bật">
+  <div class="container stats-grid">
+    <div class="stat-cell">
+      <strong>100%</strong>
+      <span>Chất liệu được kiểm định độ bền &amp; độ thoáng khí</span>
+    </div>
+    <div class="stat-cell">
+      <strong>24+</strong>
+      <span>Công đoạn cắt, ép keo, may và kiểm định mỗi sản phẩm</span>
+    </div>
+    <div class="stat-cell">
+      <strong>180 Ngày</strong>
+      <span>Bảo hành đường may và hỗ trợ chỉnh phom dáng</span>
+    </div>
+    <div class="stat-cell">
+      <strong>30 Ngày</strong>
+      <span>Đổi màu, đổi kích cỡ linh hoạt trên toàn quốc</span>
+    </div>
+  </div>
+</section>
+
+<!-- 4. 4-STEP CRAFTSMANSHIP PROCESS -->
+<section class="col-stone-band">
+  <div class="container">
+    <div class="col-center-head">
+      <div class="chapter-num">Quy trình chế tác</div>
+      <h2 class="col-heading">Từ Cuộn Vải Đến Thiết Kế Hoàn Chỉnh</h2>
+      <p>Mỗi sản phẩm trước khi lên kệ đều trải qua bốn bước kiểm soát chặt chẽ về chất liệu, thông số rập và độ sắc nét của từng mũi chỉ.</p>
+    </div>
+
+    <div class="process-grid">
+      <div class="process-card">
+        <div class="process-top">
+          <span class="process-step">01</span>
+          <i class="bi bi-layers"></i>
+        </div>
+        <h3>Tuyển chọn chất liệu</h3>
+        <p>Ưu tiên sợi tự nhiên như Cotton sợi dài, Linen thô mộc và Len Wool có độ đàn hồi, thấm hút và độ rủ ổn định.</p>
+      </div>
+
+      <div class="process-card">
+        <div class="process-top">
+          <span class="process-step">02</span>
+          <i class="bi bi-rulers"></i>
+        </div>
+        <h3>Dựng rập chuẩn phom</h3>
+        <p>Nghiên cứu số đo thực tế theo 4 phom Slim, Tailored, Regular và Relaxed để từng dáng người đều chọn được size vừa vặn.</p>
+      </div>
+
+      <div class="process-card">
+        <div class="process-top">
+          <span class="process-step">03</span>
+          <i class="bi bi-scissors"></i>
+        </div>
+        <h3>Cắt may tinh xảo</h3>
+        <p>Cân đối mật độ mũi kim, ép keo cổ áo và dựng cầu vai bằng kỹ thuật truyền thống kết hợp thiết bị chính xác cao.</p>
+      </div>
+
+      <div class="process-card">
+        <div class="process-top">
+          <span class="process-step">04</span>
+          <i class="bi bi-patch-check"></i>
+        </div>
+        <h3>Kiểm định KCS</h3>
+        <p>Kiểm tra thủ công từng đường chỉ, khuy nút, độ đều màu và ủi định hình trước khi đóng gói giao tới khách hàng.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. 3 CORE VALUES + VISUAL DIPTYCH -->
+<section class="ed-section">
+  <div class="container">
+    <div class="ed-head">
+      <div>
+        <div class="chapter-num" style="margin-bottom:4px">Cam kết cốt lõi</div>
+        <h2 class="ed-title">Ba Trụ Cột Định Hình Phong Cách</h2>
+      </div>
+    </div>
+
+    <div class="values-grid">
+      <div class="value-card">
+        <div class="value-num">01 · CHẤT LƯỢNG</div>
+        <h3>Bền Đẹp Theo Thời Gian</h3>
+        <p>Không cắt giảm định lượng vải hay phụ liệu. Từ khóa kéo, khuy sừng đến chỉ may đều hướng đến độ bền dài lâu sau nhiều lần giặt.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-num">02 · PHOM DÁNG</div>
+        <h3>Tôn Dáng &amp; Thoải Mái</h3>
+        <p>Cân bằng giữa sự chỉn chu của trang phục may đo và độ linh hoạt của đời sống hiện đại — mặc đẹp từ sáng đến tối.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-num">03 · TRẢI NGHIỆM</div>
+        <h3>Minh Bạch &amp; Tận Tâm</h3>
+        <p>Hiển thị tồn kho thực tế theo từng màu sắc, kích cỡ; giao hàng minh bạch trạng thái và hỗ trợ đổi trả rõ ràng.</p>
+      </div>
+    </div>
+
+    <div class="brand-diptych">
+      <div class="brand-diptych-card">
+        <img src="{{ url_for('static', filename='img/look_formal_bw.jpg') }}" alt="Phong cách lịch lãm vượt thời gian">
+      </div>
+      <div class="brand-diptych-card">
+        <img src="{{ url_for('static', filename='img/look_trench_detail.jpg') }}" alt="Hoàn thiện chi tiết áo khoác">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. BRAND JOURNEY TIMELINE -->
+<section class="col-stone-band" style="border-bottom:none">
+  <div class="container">
+    <div class="col-center-head">
+      <div class="chapter-num">Hành trình phát triển</div>
+      <h2 class="col-heading">Những Cột Mốc Đáng Nhớ</h2>
+    </div>
+
+    <div class="timeline-grid">
+      <div class="tl-item">
+        <div class="tl-year">2019</div>
+        <h3>Khởi đầu xưởng may đo</h3>
+        <p>Thành lập đội ngũ thiết kế và tạo mẫu đầu tiên, tập trung vào áo sơ mi công sở và quần âu đứng phom.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-year">2021</div>
+        <h3>Chuẩn hóa hệ thống phom</h3>
+        <p>Xây dựng bộ thông số size chuẩn Á Đông và mở rộng sang dòng Suits, Blazer và áo khoác mùa lạnh.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-year">2023</div>
+        <h3>Bộ sưu tập sợi tự nhiên</h3>
+        <p>Ứng dụng Linen thô mộc, Cotton Ai Cập và Len Wool cao cấp vào toàn bộ các dòng sản phẩm chủ lực.</p>
+      </div>
+      <div class="tl-item">
+        <div class="tl-year">2026</div>
+        <h3>Trải nghiệm số toàn diện</h3>
+        <p>Ra mắt nền tảng mua sắm trực tuyến đồng bộ tồn kho thời gian thực theo từng biến thể Màu × Size.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. CLOSING EDITORIAL CTA -->
+<section class="brand-cta-band">
+  <div class="container brand-cta-inner">
+    <div>
+      <div class="ed-eyebrow" style="color:#A3A3A3">Khám phá trải nghiệm mua sắm</div>
+      <h2>Sẵn Sàng Chọn Thiết Kế Dành Cho Bạn?</h2>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

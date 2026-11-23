@@ -1,0 +1,63 @@
+{% extends "store/_tai_khoan_layout.html" %}
+{% set tk_tab = 'danh_gia' %}
+{% set tk_crumb = 'Đánh giá của tôi' %}
+{% block tieu_de %}Đánh giá sản phẩm của tôi{% endblock %}
+{% block tk_noi_dung %}
+
+<div class="acc-head">
+  <div>
+    <h1>Đánh giá của tôi</h1>
+    <p class="acc-sub">Chia sẻ cảm nhận về phom dáng và chất liệu sau khi nhận hàng để hỗ trợ cộng đồng mua sắm.</p>
+  </div>
+</div>
+
+{% if cho_danh_gia %}
+<h3 class="acc-subhead">Sản phẩm đã mua chờ đánh giá ({{ cho_danh_gia|length }})</h3>
+<div class="review-pending-list">
+  {% for sp in cho_danh_gia %}
+  <div class="review-pending-card">
+    <img class="cart-thumb" style="width:52px;height:68px" src="{{ url_for('static', filename='img/' ~ (sp.hinh_anh or 'prod_shirt_white.jpg')) }}" alt="{{ sp.ten_sp }}">
+    <div style="flex:1;min-width:0">
+      <a href="{{ url_for('chi_tiet_sp', ma_sp=sp.ma_sp) }}" style="font-weight:700;display:block">{{ sp.ten_sp }}</a>
+      <span style="font-size:12px;color:#666666">Đơn hoàn thành: {{ sp.ma_don }}</span>
+    </div>
+    <a href="{{ url_for('chi_tiet_sp', ma_sp=sp.ma_sp) }}#danh-gia" class="btn btn-black btn-sm">Viết đánh giá</a>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<h3 class="acc-subhead" style="margin-top:28px">Đánh giá đã gửi ({{ ds_danh_gia|length }})</h3>
+{% if ds_danh_gia %}
+<div class="review-list">
+  {% for dg in ds_danh_gia %}
+  {% set sp = sp_map.get(dg.ma_sp) %}
+  <article class="review-item">
+    <div class="review-item-head">
+      <div>
+        <a href="{{ url_for('chi_tiet_sp', ma_sp=dg.ma_sp) }}#danh-gia" style="font-weight:700">
+          {{ sp.ten_sp if sp else dg.ma_sp }}
+        </a>
+        <div class="star-row" aria-label="{{ dg.so_sao }} trên 5 sao">
+          {% for i in range(1, 6) %}<i class="bi bi-star{{ '-fill' if i <= dg.so_sao }}"></i>{% endfor %}
+          <span class="fit-pill">{{ dg.phom_dang }}</span>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:12px;color:#666666">{{ dg.ngay_tao|ngay }}</div>
+        <a href="{{ url_for('chi_tiet_sp', ma_sp=dg.ma_sp) }}#danh-gia" class="ed-link" style="font-size:11px">Cập nhật</a>
+      </div>
+    </div>
+    <p class="review-body">{{ dg.noi_dung }}</p>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="acc-empty">
+  <i class="bi bi-chat-square-text"></i>
+  <p>Bạn chưa gửi đánh giá nào. Khi đơn hàng chuyển sang trạng thái Hoàn thành, bạn có thể chấm sao và nhận xét sản phẩm đã mua.</p>
+  <a href="{{ url_for('tai_khoan_don_hang') }}" class="btn btn-outline btn-sm">Xem đơn hàng của tôi</a>
+</div>
+{% endif %}
+
+{% endblock %}
