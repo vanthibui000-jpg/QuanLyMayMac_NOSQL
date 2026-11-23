@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% from "_macros.html" import phan_trang %}
+{% block tieu_de %}Quản lý tài khoản{% endblock %}
+{% block noi_dung %}
+<div class="luoi-kpi">
+  <div class="kpi"><div class="nhan">Tổng tài khoản</div><div class="gia-tri">{{ dem_role.tong }}</div><div class="ghi-chu-kpi">Toàn bộ hệ thống</div></div>
+  <div class="kpi"><div class="nhan">Quản trị viên (ADMIN)</div><div class="gia-tri">{{ dem_role.ADMIN }}</div><div class="ghi-chu-kpi">Toàn quyền quản trị</div></div>
+  <div class="kpi"><div class="nhan">Nhân viên (NV)</div><div class="gia-tri">{{ dem_role.NV }}</div><div class="ghi-chu-kpi">Đơn hàng &amp; Kho</div></div>
+  <div class="kpi"><div class="nhan">Khách hàng (KH)</div><div class="gia-tri">{{ dem_role.KH }}</div><div class="ghi-chu-kpi">Mua sắm trực tuyến</div></div>
+</div>
+
+<div class="the-tieu-de">
+  <span class="phu">Quản lý tài khoản đăng nhập, phân quyền 3 vai trò (ADMIN, NV, KH), đặt lại mật khẩu và khóa/mở khóa.</span>
+  <a class="nut" href="{{ url_for('admin_tai_khoan_moi') }}">+ Thêm tài khoản</a>
+</div>
+
+<form method="get" class="the thanh-loc">
+  <div class="o-tim">
+    <label for="q">Tìm theo tên đăng nhập, họ tên, email hoặc mã</label>
+    <input type="search" id="q" name="q" value="{{ q }}" placeholder="Ví dụ: admin, nv001, kh0001...">
+  </div>
+  <div>
+    <label for="vai_tro">Vai trò</label>
+    <select id="vai_tro" name="vai_tro">
+      <option value="">Tất cả vai trò</option>
+      {% for ma, nhan in vai_tro_nhan.items() %}
+      <option value="{{ ma }}" {{ 'selected' if ma == vai_tro }}>{{ nhan }} ({{ ma }})</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div>
+    <label for="trang_thai">Trạng thái</label>
+    <select id="trang_thai" name="trang_thai">
+      <option value="">Tất cả</option>
+      <option value="hd" {{ 'selected' if trang_thai == 'hd' }}>Đang hoạt động</option>
+      <option value="khoa" {{ 'selected' if trang_thai == 'khoa' }}>Đã khóa</option>
+    </select>
+  </div>
+  <button type="submit" class="nut-phu nut-nho">Lọc</button>
+  {% if q or vai_tro or trang_thai %}<a class="nut nut-phu nut-nho" href="{{ url_for('admin_tai_khoan') }}">Xóa lọc</a>{% endif %}
+</form>
+
+<div class="the bang-cuon">
+  <table>
+    <thead>
+      <tr><th>Mã</th><th>Tên đăng nhập</th><th>Họ tên</th><th>Vai trò</th><th>Liên hệ</th><th>Trạng thái</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for nd in ds %}
+      {% set kh = kh_map.get(nd._id) %}
+      {% set bi_khoa = (nd.hoat_dong is false) or (kh and kh.hoat_dong is false) %}
+      <tr class="{{ 'dong-ngung' if bi_khoa }}">
+        <td><code>{{ nd._id }}</code></td>
+        <td>
+          <strong>{{ nd.ten_dang_nhap }}</strong>
+          {% if nd._id == ma_nd_toi %}<span class="phu"> (bạn)</span>{% endif %}
+        </td>
+        <td>{{ nd.ho_ten or '—' }}</td>
+        <td>
+          <span class="trang-thai {{ 'da' if nd.vai_tro == 'ADMIN' else ('mot-phan' if nd.vai_tro == 'NV' else 'cho') }}">
+            {{ vai_tro_nhan.get(nd.vai_tro, nd.vai_tro) }} ({{ nd.vai_tro }})
+          </span>
+        </td>
+        <td>
+          {% if kh %}<div>SĐT: {{ kh.sdt }} <span class="phu">({{ kh._id }})</span></div>{% endif %}
+          {% if nd.email %}<div class="phu">{{ nd.email }}</div>{% endif %}
+          {% if not kh and not nd.email %}<span class="phu">—</span>{% endif %}
+        </td>
+        <td>
+          {% if bi_khoa %}
+            <span class="trang-thai huy">Đã khóa</span>
+          {% else %}
+            <span class="trang-thai da">Hoạt động</span>
+          {% endif %}
+        </td>
+        <td class="hang-ngang" style="justify-content:flex-end">
+          <a class="nut nut-phu nut-nho" href="{{ url_for('admin_tai_khoan_sua', ma_nd=nd._id) }}">Sửa</a>
+          {% if nd._id != ma_nd_toi %}
+          <form method="post" action="{{ url_for('admin_tai_khoan_trang_thai', ma_nd=nd._id) }}"
+                data-confirm="{{ 'Mở khóa tài khoản ' ~ nd.ten_dang_nhap ~ '?' if bi_khoa else 'Khóa tài khoản ' ~ nd.ten_dang_nhap ~ '? Người này sẽ không thể đăng nhập.' }}">
+            <button type="submit" class="nut-nho {{ 'nut-phu' if bi_khoa else 'nut-do' }}">
+              {{ 'Mở khóa' if bi_khoa else 'Khóa' }}
+            </button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="phu">Không tìm thấy tài khoản nào khớp bộ lọc.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {{ phan_trang(pt) }}
+</div>
+{% endblock %}

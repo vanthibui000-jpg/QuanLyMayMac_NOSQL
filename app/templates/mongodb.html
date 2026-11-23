@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block tieu_de %}MongoDB Explorer{% endblock %}
+{% block noi_dung %}
+<div class="luoi-kpi">
+  <div class="kpi"><div class="nhan">Database</div><div class="gia-tri">{{ db_name }}</div><div class="ghi-chu-kpi">Replica set rs0</div></div>
+  <div class="kpi"><div class="nhan">Tổng Collection</div><div class="gia-tri">{{ thong_tin|length }}</div><div class="ghi-chu-kpi">Có $jsonSchema validator</div></div>
+  <div class="kpi"><div class="nhan">Tổng Document</div><div class="gia-tri">{{ tong_doc }}</div><div class="ghi-chu-kpi">Dữ liệu thực tế trong MongoDB</div></div>
+</div>
+
+<div class="cot-2">
+  <div class="the bang-cuon">
+    <div class="the-tieu-de"><h2>Danh sách Collection &amp; Index</h2></div>
+    <table>
+      <thead><tr><th>Collection</th><th class="so">Documents</th><th class="so">Indexes</th><th></th></tr></thead>
+      <tbody>
+        {% for c in thong_tin %}
+        <tr class="{{ 'canh-bao' if c.ten == chon }}">
+          <td><code>{{ c.ten }}</code></td>
+          <td class="so">{{ c.so_doc }}</td>
+          <td class="so">{{ c.indexes|length }}</td>
+          <td class="so"><a class="nut nut-phu nut-nho" href="{{ url_for('admin_mongodb', col=c.ten) }}">Xem mẫu</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="the">
+    <div class="the-tieu-de"><h2>Chi tiết collection <code>{{ chon }}</code></h2></div>
+    <p class="phu"><strong>Indexes:</strong> {{ indexes_chon|join(', ') }}</p>
+    <p class="phu" style="margin-top:12px"><strong>Document mẫu:</strong></p>
+    <pre class="json">{{ mau_json }}</pre>
+  </div>
+</div>
+{% endblock %}

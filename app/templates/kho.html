@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block tieu_de %}Kho nguyên vật liệu{% endblock %}
+{% block tieu_de %}Kho thành phẩm{% endblock %}
 {% block noi_dung %}
 {% if co_quyen('kho_ghi') and muc != 'canh-bao' %}
 <form method="post" class="the">
   <div class="the-tieu-de">
-    <h2>Lập phiếu</h2>
+    <h2>Lập phiếu nhập / xuất kho thành phẩm</h2>
     <div class="tab-loai" role="radiogroup" aria-label="Loại phiếu">
       <input type="radio" name="loai" id="loai-nhap" value="NHAP" {{ 'checked' if loai_mac_dinh != 'XUAT' }}>
       <label for="loai-nhap">Nhập kho</label>
@@ -12,20 +12,23 @@
       <label for="loai-xuat">Xuất kho</label>
     </div>
   </div>
-  <p class="phu" style="margin-top:-4px">Phiếu xuất sẽ bị hủy toàn bộ nếu bất kỳ dòng nào không đủ tồn kho.</p>
+  <p class="phu" style="margin-top:-4px">Tồn kho được cập nhật trực tiếp trên biến thể <code>sanpham.bien_the[]</code> trong MongoDB Transaction. Phiếu xuất bị rollback toàn bộ nếu bất kỳ dòng nào thiếu tồn.</p>
 
   <div style="margin-top:14px">
     {% for i in range(so_dong) %}
     <div class="dong-kho">
-      <select name="ma_nvl" aria-label="Nguyên vật liệu">
-        <option value="">-- chọn nguyên vật liệu --</option>
-        {% for v in nvl %}
-          <option value="{{ v._id }}">{{ v._id }} — {{ v.ten_nvl }} (tồn {{ v.so_luong_ton }})</option>
+      <select name="bien_the" aria-label="Biến thể sản phẩm">
+        <option value="">-- chọn sản phẩm · màu · size --</option>
+        {% for b in ds_bien_the %}
+          <option value="{{ b.ma_sp }}||{{ b.mau }}||{{ b.size }}">{{ b.ma_sp }} — {{ b.ten_sp }} ({{ b.mau }} / {{ b.size }}) · tồn {{ b.ton_kho }}</option>
         {% endfor %}
       </select>
       <input type="number" name="so_luong" min="1" step="1" placeholder="Số lượng" aria-label="Số lượng">
     </div>
     {% endfor %}
+  </div>
+  <div class="truong" style="margin-top:10px">
+    <input type="text" name="ghi_chu" placeholder="Ghi chú phiếu kho (ví dụ: Nhập hàng đợt mới từ xưởng)">
   </div>
   <p style="text-align:right;margin-top:10px"><button type="submit">Lập phiếu</button></p>
 </form>
@@ -33,18 +36,23 @@
 
 <div class="cot-2">
   <div class="the bang-cuon">
-    <div class="the-tieu-de"><h2>{{ 'Cảnh báo tồn kho' if muc == 'canh-bao' else 'Tồn kho' }}</h2><a class="nut nut-phu nut-nho" href="{{ url_for('xuat_csv', ten='ton-kho') }}">Xuất CSV</a><span class="phu">Tô vàng: dưới {{ nguong }}</span></div>
+    <div class="the-tieu-de">
+      <h2>{{ 'Biến thể sắp hết hàng' if muc == 'canh-bao' else 'Tồn kho biến thể Màu × Size' }}</h2>
+      {% if co_quyen('bao_cao') %}<a class="nut nut-phu nut-nho" href="{{ url_for('admin_xuat_csv', ten='ton-kho') }}">Xuất CSV</a>{% endif %}
+      <span class="phu">Cảnh báo: dưới {{ nguong }}</span>
+    </div>
     <table>
-      <thead><tr><th>Mã</th><th>Tên</th><th class="so">Tồn</th></tr></thead>
+      <thead><tr><th>Mã SP</th><th>Sản phẩm</th><th>Màu / Size</th><th class="so">Tồn</th></tr></thead>
       <tbody>
-        {% for v in nvl_bang %}
-        <tr class="{{ 'canh-bao' if v.so_luong_ton < nguong }}">
-          <td>{{ v._id }}</td>
-          <td>{{ v.ten_nvl }}{% if v.so_luong_ton < nguong %}<span class="tag-het">Sắp hết</span>{% endif %}</td>
-          <td class="so">{{ v.so_luong_ton }}</td>
+        {% for b in bang_ton %}
+        <tr class="{{ 'canh-bao' if b.ton_kho < nguong }}">
+          <td>{{ b.ma_sp }}</td>
+          <td>{{ b.ten_sp }}{% if b.ton_kho < nguong %}<span class="tag-het">Sắp hết</span>{% endif %}</td>
+          <td>{{ b.mau }} · {{ b.size }}</td>
+          <td class="so">{{ b.ton_kho }}</td>
         </tr>
         {% else %}
-        <tr><td colspan="3" class="phu">Không có nguyên vật liệu nào dưới {{ nguong }}.</td></tr>
+        <tr><td colspan="4" class="phu">Không có biến thể nào dưới {{ nguong }}.</td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -52,25 +60,26 @@
 
   <div class="the bang-cuon">
     <div class="the-tieu-de">
-      <h2>Phiếu gần đây</h2>
+      <h2>Phiếu kho gần đây</h2>
       <div class="hang-ngang">
-        <a class="nut {{ 'nut-phu' if loc_loai }} nut-nho" href="{{ url_for('kho') }}">Tất cả</a>
-        <a class="nut {{ 'nut-phu' if loc_loai != 'NHAP' }} nut-nho" href="{{ url_for('kho', loai='NHAP') }}">Nhập</a>
-        <a class="nut {{ 'nut-phu' if loc_loai != 'XUAT' }} nut-nho" href="{{ url_for('kho', loai='XUAT') }}">Xuất</a>
+        <a class="nut {{ 'nut-phu' if loc_loai }} nut-nho" href="{{ url_for('admin_kho') }}">Tất cả</a>
+        <a class="nut {{ 'nut-phu' if loc_loai != 'NHAP' }} nut-nho" href="{{ url_for('admin_kho', loai='NHAP') }}">Nhập</a>
+        <a class="nut {{ 'nut-phu' if loc_loai != 'XUAT' }} nut-nho" href="{{ url_for('admin_kho', loai='XUAT') }}">Xuất</a>
       </div>
     </div>
     <table>
-      <thead><tr><th>Mã</th><th>Loại</th><th>Ngày</th><th class="so">Số dòng</th></tr></thead>
+      <thead><tr><th>Mã</th><th>Loại</th><th>Ngày lập</th><th>Người lập</th><th class="so">Số dòng</th></tr></thead>
       <tbody>
         {% for p in phieu %}
         <tr>
           <td>{{ p._id }}</td>
           <td><span class="trang-thai {{ 'da' if p.loai == 'NHAP' else 'cho' }}">{{ 'Nhập' if p.loai == 'NHAP' else 'Xuất' }}</span></td>
           <td>{{ p.ngay_lap|ngay }}</td>
+          <td>{{ p.nguoi_lap or '—' }}</td>
           <td class="so">{{ p.chi_tiet|length }}</td>
         </tr>
         {% else %}
-        <tr><td colspan="4" class="phu">Chưa có phiếu nào.</td></tr>
+        <tr><td colspan="5" class="phu">Chưa có phiếu kho nào.</td></tr>
         {% endfor %}
       </tbody>
     </table>

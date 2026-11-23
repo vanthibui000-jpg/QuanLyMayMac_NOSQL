@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block tieu_de %}Tổng quan{% endblock %}
+{% block tieu_de %}Dashboard{% endblock %}
 {% block noi_dung %}
 <div class="luoi-kpi">
   {% if co_quyen('bao_cao') %}
@@ -9,27 +9,21 @@
     <div class="ghi-chu-kpi">{{ thang_moi.so_don }} đơn hàng</div>
   </div>
   {% endif %}
-  {% if co_quyen('xem_don') %}
   <div class="kpi">
     <div class="nhan">Tổng đơn hàng</div>
     <div class="gia-tri">{{ so_don }}</div>
     <div class="ghi-chu-kpi">{{ so_khach }} khách · {{ so_sp }} sản phẩm</div>
   </div>
-  {% endif %}
-  {% if co_quyen('bao_cao') %}
-  <div class="kpi">
-    <div class="nhan">Công nợ phải thu</div>
-    <div class="gia-tri">{{ tong_no|tien }}</div>
-    <div class="ghi-chu-kpi">Tổng số tiền khách còn nợ</div>
+  <div class="kpi {{ 'canh-bao' if so_cho_xn > 0 }}">
+    <div class="nhan">Đơn chờ xác nhận</div>
+    <div class="gia-tri">{{ so_cho_xn }}</div>
+    <div class="ghi-chu-kpi">Cần nhân viên xử lý</div>
   </div>
-  {% endif %}
-  {% if co_quyen('xem_kho') %}
-  <div class="kpi {{ 'canh-bao' if so_nvl_het > 0 }}">
-    <div class="nhan">NVL dưới {{ nguong }}</div>
-    <div class="gia-tri">{{ so_nvl_het }}</div>
-    <div class="ghi-chu-kpi">Cần lập yêu cầu mua</div>
+  <div class="kpi {{ 'canh-bao' if so_sap_het > 0 }}">
+    <div class="nhan">Biến thể tồn dưới {{ nguong }}</div>
+    <div class="gia-tri">{{ so_sap_het }}</div>
+    <div class="ghi-chu-kpi">Cần nhập thêm hàng</div>
   </div>
-  {% endif %}
 </div>
 
 {% if co_quyen('bao_cao') %}
@@ -39,45 +33,37 @@
     <div class="bieu-do"><canvas id="bieu-do-thang"></canvas></div>
   </div>
   <div class="the">
-    <div class="the-tieu-de"><h2>Top sản phẩm</h2></div>
+    <div class="the-tieu-de"><h2>Top sản phẩm bán chạy</h2></div>
     <div class="bieu-do thap"><canvas id="bieu-do-sp"></canvas></div>
   </div>
 </div>
 {% endif %}
 
-{% if co_quyen('xem_don') %}
 <div class="the">
   <div class="the-tieu-de">
     <h2>Đơn hàng gần nhất</h2>
-    <div>
-      {% if co_quyen('tao_don') %}<a class="nut nut-phu nut-nho" href="{{ url_for('don_hang_moi') }}">+ Lập đơn</a>{% endif %}
-      <a class="nut nut-phu nut-nho" href="{{ url_for('danh_sach_don') }}">Xem tất cả</a>
-    </div>
+    <a class="nut nut-phu nut-nho" href="{{ url_for('admin_don_hang') }}">Xem tất cả</a>
   </div>
   <div class="bang-cuon">
     <table>
-      <thead><tr><th>Mã đơn</th><th>Ngày đặt</th><th>Khách</th><th>Trạng thái</th><th class="so">Tổng tiền</th></tr></thead>
+      <thead><tr><th>Mã đơn</th><th>Ngày đặt</th><th>Khách nhận</th><th>Trạng thái</th><th>Thanh toán</th><th class="so">Tổng tiền</th></tr></thead>
       <tbody>
         {% for d in don_gan %}
         <tr>
-          <td><a href="{{ url_for('chi_tiet_don', ma_don=d._id) }}">{{ d._id }}</a></td>
+          <td><a href="{{ url_for('admin_chi_tiet_don', ma_don=d._id) }}">{{ d._id }}</a></td>
           <td>{{ d.ngay_dat|ngay }}</td>
-          <td>{{ d.ma_kh }}</td>
+          <td>{{ d.giao_hang.ho_ten }} <span class="phu">({{ d.ma_kh }})</span></td>
           <td><span class="trang-thai {{ trang_thai_lop.get(d.trang_thai, '') }}">{{ d.trang_thai|trang_thai }}</span></td>
+          <td>{{ d.phuong_thuc_tt }} · {{ d.trang_thai_tt|trang_thai_tt }}</td>
           <td class="so">{{ d.tong_tien|tien }}</td>
         </tr>
         {% else %}
-        <tr><td colspan="5" class="phu">Chưa có đơn hàng nào.</td></tr>
+        <tr><td colspan="6" class="phu">Chưa có đơn hàng nào.</td></tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
-{% endif %}
-
-{% if not (co_quyen('bao_cao') or co_quyen('xem_don') or co_quyen('xem_kho')) %}
-<div class="the"><p class="phu">Chọn một mục trong menu bên trái để bắt đầu.</p></div>
-{% endif %}
 {% endblock %}
 
 {% block scripts %}
@@ -95,30 +81,35 @@
         data: {{ gia_tri_thang|tojson }},
         borderColor: '#2563eb',
         backgroundColor: 'rgba(37,99,235,.12)',
-        fill: true,
-        tension: .3,
-        pointRadius: 2,
+        fill: true, tension: .3, pointRadius: 3,
       }],
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => dinhDang(c.parsed.y) + ' ₫' } } },
       scales: {
-        y: { grid: luoiMo, ticks: { callback: v => (v / 1e9).toFixed(0) + ' tỷ' } },
+        y: { grid: luoiMo, ticks: { callback: v => v >= 1e6 ? (v / 1e6).toFixed(0) + ' tr' : dinhDang(v) } },
         x: { grid: { display: false } },
       },
     },
   });
+
+  const fullNames = {{ nhan_sp|tojson }};
+  const shortNames = fullNames.map(n => n.length > 20 ? n.slice(0, 19) + '…' : n);
   new Chart(document.getElementById('bieu-do-sp'), {
     type: 'bar',
     data: {
-      labels: {{ nhan_sp|tojson }},
-      datasets: [{ label: 'Số lượng', data: {{ gia_tri_sp|tojson }}, backgroundColor: '#2563eb', borderRadius: 6 }],
+      labels: shortNames,
+      datasets: [{ label: 'Số lượng bán', data: {{ gia_tri_sp|tojson }}, backgroundColor: '#2563eb', borderRadius: 6 }],
     },
     options: {
       indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { x: { grid: luoiMo }, y: { grid: { display: false } } },
+      layout: { padding: { left: 6, right: 8 } },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { title: items => fullNames[items[0].dataIndex] } },
+      },
+      scales: { x: { grid: luoiMo }, y: { grid: { display: false }, ticks: { font: { size: 11 } } } },
     },
   });
 </script>

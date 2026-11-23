@@ -3,40 +3,81 @@
 {% block noi_dung %}
 <div class="cot-2">
   <form method="post" class="the">
-    <h2>{{ 'Thông tin sản phẩm mới' if la_moi else 'Thông tin sản phẩm' }}</h2>
-    {% if not la_moi %}<p class="ghi-chu-form">Mã {{ sp._id }} không đổi. Đơn giá mới chỉ áp dụng cho đơn lập sau này.</p>{% endif %}
+    <h2>{{ 'Sản phẩm thời trang mới' if la_moi else 'Cập nhật sản phẩm' }}</h2>
 
     <div class="truong">
       <label class="nhan-form" for="ten_sp">Tên sản phẩm *</label>
       <input type="text" id="ten_sp" name="ten_sp" value="{{ sp.ten_sp or '' }}" required maxlength="120">
     </div>
     <div class="truong">
-      <label class="nhan-form" for="don_gia">Đơn giá (VND) *</label>
-      <input type="number" id="don_gia" name="don_gia" value="{{ sp.don_gia or '' }}" min="1" step="1" required>
+      <label class="nhan-form" for="ma_dm">Danh mục *</label>
+      <select id="ma_dm" name="ma_dm" required>
+        {% for dm in danh_muc %}
+        <option value="{{ dm._id }}" {{ 'selected' if sp.ma_dm == dm._id }}>{{ dm.ten_dm }}</option>
+        {% endfor %}
+      </select>
     </div>
     <div class="truong">
-      <label class="nhan-form" for="mau">Màu (cách nhau bằng dấu phẩy)</label>
-      <input type="text" id="mau" name="mau" value="{{ sp.mau|join(', ') if sp.mau is not string else sp.mau }}" placeholder="Trắng, Đen, Be">
+      <label class="nhan-form" for="don_gia">Giá bán (VND) *</label>
+      <input type="number" id="don_gia" name="don_gia" value="{{ sp.don_gia or '' }}" min="1000" step="1000" required>
     </div>
     <div class="truong">
-      <label class="nhan-form" for="size">Size (cách nhau bằng dấu phẩy)</label>
-      <input type="text" id="size" name="size" value="{{ sp.size|join(', ') if sp.size is not string else sp.size }}" placeholder="S, M, L, XL">
+      <label class="nhan-form" for="gia_goc">Giá gốc (VND, để bằng hoặc lớn hơn giá bán nếu giảm giá)</label>
+      <input type="number" id="gia_goc" name="gia_goc" value="{{ sp.gia_goc or '' }}" min="0" step="1000">
     </div>
     <div class="truong">
-      <label class="nhan-form" for="barcode">Mã vạch (không bắt buộc)</label>
-      <input type="text" id="barcode" name="barcode" value="{{ sp.barcode or '' }}" maxlength="50">
+      <label class="nhan-form" for="bo_suu_tap">Bộ sưu tập</label>
+      <select id="bo_suu_tap" name="bo_suu_tap">
+        <option value="moi" {{ 'selected' if sp.bo_suu_tap == 'moi' }}>Hàng mới (NEW)</option>
+        <option value="sale" {{ 'selected' if sp.bo_suu_tap == 'sale' }}>Final Sale</option>
+        <option value="thuong" {{ 'selected' if sp.bo_suu_tap == 'thuong' }}>Thường xuyên</option>
+      </select>
     </div>
+    <div class="truong">
+      <label class="nhan-form" for="hinh_anh">Ảnh sản phẩm</label>
+      <select id="hinh_anh" name="hinh_anh">
+        {% for f in anh_co_san %}
+        <option value="{{ f }}" {{ 'selected' if (sp.hinh_anh and sp.hinh_anh[0] == f) or sp.hinh_anh == f }}>{{ f }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="truong">
+      <label class="nhan-form" for="form_dang">Form dáng</label>
+      <input type="text" id="form_dang" name="form_dang" value="{{ sp.form_dang or 'Regular Fit' }}">
+    </div>
+    <div class="truong">
+      <label class="nhan-form" for="chat_lieu">Chất liệu</label>
+      <input type="text" id="chat_lieu" name="chat_lieu" value="{{ sp.chat_lieu or 'Cotton tự nhiên cao cấp' }}">
+    </div>
+    <div class="truong">
+      <label class="nhan-form" for="mo_ta">Mô tả</label>
+      <textarea id="mo_ta" name="mo_ta" rows="2">{{ sp.mo_ta or '' }}</textarea>
+    </div>
+    {% if la_moi %}
+    <div class="truong">
+      <label class="nhan-form" for="mau">Màu sắc (cách nhau dấu phẩy) *</label>
+      <input type="text" id="mau" name="mau" value="{{ sp.mau or 'Đen, Trắng, Xanh navy' }}" required>
+    </div>
+    <div class="truong">
+      <label class="nhan-form" for="size">Kích cỡ (cách nhau dấu phẩy) *</label>
+      <input type="text" id="size" name="size" value="{{ sp.size or 'S, M, L, XL' }}" required>
+    </div>
+    <div class="truong">
+      <label class="nhan-form" for="ton_mac_dinh">Tồn kho ban đầu mỗi biến thể</label>
+      <input type="number" id="ton_mac_dinh" name="ton_mac_dinh" value="{{ sp.ton_mac_dinh or 20 }}" min="0">
+    </div>
+    {% endif %}
 
     <div class="hang-ngang">
-      <button type="submit">Lưu</button>
-      <a class="nut nut-phu" href="{{ url_for('ds_san_pham') }}">Hủy</a>
+      <button type="submit">Lưu sản phẩm</button>
+      <a class="nut nut-phu" href="{{ url_for('admin_san_pham') }}">Hủy</a>
     </div>
   </form>
 
   <div class="the">
-    <h2>Lưu ý</h2>
-    <p class="phu">Các màu và size nhập ở đây sẽ hiện thành chip trong form đặt hàng.</p>
-    <p class="phu">Sản phẩm không xóa được để giữ lịch sử đơn. Nếu không còn bán, dùng nút "Ngừng bán" ở danh sách.</p>
+    <h2>Quản lý tồn kho biến thể</h2>
+    <p class="phu">Mỗi tổ hợp <strong>Màu × Size</strong> được lưu trong mảng nhúng <code>bien_the[]</code> của MongoDB.</p>
+    <p class="phu">Sau khi tạo sản phẩm, bạn nhập hoặc xuất tồn kho từng biến thể tại mục <a href="{{ url_for('admin_kho') }}">Kho thành phẩm</a>.</p>
   </div>
 </div>
 {% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block tieu_de %}{{ 'Thêm tài khoản mới' if la_moi else 'Sửa tài khoản ' ~ nd.ten_dang_nhap }}{% endblock %}
+{% block noi_dung %}
+<div class="cot-2">
+  <form method="post" class="the">
+    <h2>{{ 'Thông tin tài khoản mới' if la_moi else 'Cập nhật tài khoản ' ~ nd._id }}</h2>
+
+    {% if la_moi %}
+    <div class="truong">
+      <label class="nhan-form" for="ten_dang_nhap">Tên đăng nhập * (không dấu, không khoảng trắng)</label>
+      <input type="text" id="ten_dang_nhap" name="ten_dang_nhap" value="{{ nd.ten_dang_nhap or '' }}" required minlength="3" maxlength="50" placeholder="Ví dụ: nv003 hoặc admin2">
+    </div>
+    <div class="truong">
+      <label class="nhan-form" for="mat_khau">Mật khẩu * (tối thiểu 6 ký tự)</label>
+      <input type="password" id="mat_khau" name="mat_khau" required minlength="6">
+    </div>
+    {% else %}
+    <div class="truong">
+      <label class="nhan-form">Tên đăng nhập</label>
+      <input type="text" value="{{ nd.ten_dang_nhap }}" disabled>
+    </div>
+    {% endif %}
+
+    <div class="truong">
+      <label class="nhan-form" for="ho_ten">Họ và tên *</label>
+      <input type="text" id="ho_ten" name="ho_ten" value="{{ nd.ho_ten or '' }}" required maxlength="120">
+    </div>
+
+    <div class="truong">
+      <label class="nhan-form" for="vai_tro">Vai trò *</label>
+      <select id="vai_tro" name="vai_tro" required>
+        {% for ma, nhan in vai_tro_nhan.items() %}
+        <option value="{{ ma }}" {{ 'selected' if nd.vai_tro == ma }}>{{ nhan }} ({{ ma }})</option>
+        {% endfor %}
+      </select>
+      {% if la_chinh_minh %}<p class="ghi-chu-form">Bạn đang sửa tài khoản của chính mình (không thể tự hạ vai trò ADMIN).</p>{% endif %}
+    </div>
+
+    <div class="truong">
+      <label class="nhan-form" for="email">Email (không bắt buộc)</label>
+      <input type="email" id="email" name="email" value="{{ nd.email or '' }}" maxlength="120">
+    </div>
+
+    {% if not la_moi %}
+    <div class="truong">
+      <label class="nhan-form" for="mat_khau_moi">Đặt lại mật khẩu mới (để trống nếu giữ nguyên)</label>
+      <input type="password" id="mat_khau_moi" name="mat_khau_moi" minlength="6" placeholder="Nhập tối thiểu 6 ký tự để đổi mật khẩu">
+    </div>
+    {% endif %}
+
+    <div class="truong">
+      <label class="nhan-form" for="sdt">Số điện thoại (bắt buộc nếu vai trò là Khách hàng KH)</label>
+      <input type="tel" id="sdt" name="sdt" value="{{ kh.sdt or '' }}" maxlength="15" placeholder="09xxxxxxxx">
+    </div>
+
+    <div class="truong">
+      <label class="nhan-form" for="dia_chi">Địa chỉ mặc định (dành cho Khách hàng KH)</label>
+      <input type="text" id="dia_chi" name="dia_chi" value="{{ kh.dia_chi or '' }}" maxlength="200">
+    </div>
+
+    <div class="hang-ngang">
+      <button type="submit">{{ 'Tạo tài khoản' if la_moi else 'Lưu thay đổi' }}</button>
+      <a class="nut nut-phu" href="{{ url_for('admin_tai_khoan') }}">Hủy</a>
+    </div>
+  </form>
+
+  <div class="the">
+    <h2>Quyền hạn theo 3 vai trò</h2>
+    <p class="phu"><strong>ADMIN (Quản trị viên):</strong> Toàn quyền quản trị, quản lý tài khoản, sản phẩm, khách hàng, hủy đơn hoàn kho, báo cáo và MongoDB Explorer.</p>
+    <p class="phu"><strong>NV (Nhân viên):</strong> Xử lý trạng thái đơn hàng, xác nhận thanh toán, nhập/xuất kho thành phẩm, xem sản phẩm và khách hàng.</p>
+    <p class="phu"><strong>KH (Khách hàng):</strong> Mua sắm trên cửa hàng, giỏ hàng, đặt đơn và theo dõi/tự hủy đơn của chính mình. Khi tạo tài khoản KH, hệ thống tự tạo đồng bộ hồ sơ <code>khachhang</code> trong cùng MongoDB Transaction.</p>
+  </div>
+</div>
+{% endblock %}
