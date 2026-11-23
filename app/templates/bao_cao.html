@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block tieu_de %}Báo cáo{% endblock %}
+{% block noi_dung %}
+<div class="the" id="doanh-thu">
+  <div class="the-tieu-de">
+    <h2>Doanh thu theo tháng</h2>
+    <a class="nut nut-phu nut-nho" href="{{ url_for('xuat_csv', ten='doanh-thu-theo-thang') }}">Xuất CSV</a>
+  </div>
+  <div class="bieu-do"><canvas id="bd-thang"></canvas></div>
+</div>
+
+<div class="cot-2">
+  <div class="the" id="san-pham">
+    <div class="the-tieu-de">
+      <h2>Top sản phẩm (doanh thu)</h2>
+      <a class="nut nut-phu nut-nho" href="{{ url_for('xuat_csv', ten='top-san-pham') }}">Xuất CSV</a>
+    </div>
+    <div class="bieu-do thap"><canvas id="bd-sp"></canvas></div>
+  </div>
+  <div class="the">
+    <div class="the-tieu-de">
+      <h2>Bán chạy Màu × Size (top 8)</h2>
+      <a class="nut nut-phu nut-nho" href="{{ url_for('xuat_csv', ten='mau-size') }}">Xuất CSV</a>
+    </div>
+    <div class="bieu-do thap"><canvas id="bd-mau"></canvas></div>
+  </div>
+</div>
+
+<div class="cot-2">
+  <div class="the">
+    <div class="the-tieu-de">
+      <h2>Top 10 khách còn nợ</h2>
+      <a class="nut nut-phu nut-nho" href="{{ url_for('xuat_csv', ten='cong-no') }}">Xuất CSV</a>
+    </div>
+    <div class="bieu-do thap"><canvas id="bd-no"></canvas></div>
+    <div class="bang-cuon" style="margin-top:12px">
+      <table>
+        <thead><tr><th>Khách</th><th class="so">Đã mua</th><th class="so">Đã trả</th><th class="so">Còn nợ</th></tr></thead>
+        <tbody>
+          {% for r in cong_no %}
+          <tr><td>{{ r.ma_kh }}</td><td class="so">{{ r.tong_mua|tien }}</td><td class="so">{{ r.da_tra|tien }}</td><td class="so">{{ r.cong_no|tien }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="the">
+    <div class="the-tieu-de">
+      <h2>Nguyên vật liệu dưới {{ nguong }}</h2>
+      <a class="nut nut-phu nut-nho" href="{{ url_for('xuat_csv', ten='nvl-sap-het') }}">Xuất CSV</a>
+    </div>
+    <div class="bang-cuon">
+      <table>
+        <thead><tr><th>Mã</th><th>Tên</th><th class="so">Tồn</th></tr></thead>
+        <tbody>
+          {% for r in nvl_het %}
+          <tr class="canh-bao"><td>{{ r._id }}</td><td>{{ r.ten_nvl }}</td><td class="so">{{ r.so_luong_ton }}</td></tr>
+          {% else %}
+          <tr><td colspan="3" class="phu">Không có nguyên vật liệu nào dưới ngưỡng.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  const luoi = { color: '#eef0f3' };
+  const khongLuoi = { display: false };
+  const dinhDang = v => Number(v).toLocaleString('vi-VN');
+  const tooltipTien = { callbacks: { label: c => dinhDang(c.parsed.x ?? c.parsed.y) + ' ₫' } };
+
+  new Chart(document.getElementById('bd-thang'), {
+    type: 'line',
+    data: {
+      labels: {{ nhan_thang|tojson }},
+      datasets: [{ label: 'Doanh thu (₫)', data: {{ gia_tri_thang|tojson }}, borderColor: '#2563eb',
+                   backgroundColor: 'rgba(37,99,235,.12)', fill: true, tension: .3, pointRadius: 2 }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: tooltipTien },
+      scales: { y: { grid: luoi, ticks: { callback: v => (v / 1e9).toFixed(0) + ' tỷ' } }, x: { grid: khongLuoi } },
+    },
+  });
+
+  new Chart(document.getElementById('bd-sp'), {
+    type: 'bar',
+    data: { labels: {{ nhan_sp|tojson }},
+            datasets: [{ label: 'Doanh thu', data: {{ gia_tri_sp|tojson }}, backgroundColor: '#2563eb', borderRadius: 6 }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+               plugins: { legend: { display: false }, tooltip: tooltipTien },
+               scales: { x: { grid: luoi, ticks: { callback: v => (v / 1e9).toFixed(1) + ' tỷ' } }, y: { grid: khongLuoi } } },
+  });
+
+  new Chart(document.getElementById('bd-mau'), {
+    type: 'bar',
+    data: { labels: {{ nhan_mau|tojson }},
+            datasets: [{ label: 'Số lượng', data: {{ gia_tri_mau|tojson }}, backgroundColor: '#0f766e', borderRadius: 6 }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+               plugins: { legend: { display: false } },
+               scales: { x: { grid: luoi }, y: { grid: khongLuoi } } },
+  });
+
+  new Chart(document.getElementById('bd-no'), {
+    type: 'bar',
+    data: { labels: {{ nhan_no|tojson }},
+            datasets: [{ label: 'Còn nợ', data: {{ gia_tri_no|tojson }}, backgroundColor: '#dc2626', borderRadius: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false,
+               plugins: { legend: { display: false }, tooltip: tooltipTien },
+               scales: { y: { grid: luoi, ticks: { callback: v => (v / 1e6).toFixed(0) + ' tr' } }, x: { grid: khongLuoi } } },
+  });
+</script>
+{% endblock %}

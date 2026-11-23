@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "_macros.html" import phan_trang %}
+{% block tieu_de %}Đơn hàng{% endblock %}
+{% block noi_dung %}
+<div class="the-tieu-de">
+  <span class="phu">Lọc theo mã đơn, mã khách hoặc trạng thái.</span>
+  <div class="hang-ngang">
+    {% if co_quyen('bao_cao') %}<a class="nut nut-phu nut-nho" href="{{ url_for('xuat_csv', ten='don-hang') }}">Xuất CSV</a>{% endif %}
+    {% if co_quyen('tao_don') %}<a class="nut" href="{{ url_for('don_hang_moi') }}">+ Lập đơn mới</a>{% endif %}
+  </div>
+</div>
+
+<form method="get" class="the thanh-loc">
+  <div class="o-tim">
+    <label for="q">Mã đơn hoặc mã khách</label>
+    <input type="search" id="q" name="q" value="{{ q }}" placeholder="DH000123 hoặc KH0042">
+  </div>
+  <div>
+    <label for="trang_thai">Trạng thái</label>
+    <select id="trang_thai" name="trang_thai">
+      <option value="">Tất cả</option>
+      {% for ma, nhan in trang_thai_nhan.items() %}
+        <option value="{{ ma }}" {{ 'selected' if ma == trang_thai }}>{{ nhan }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="nut-phu nut-nho">Lọc</button>
+  {% if q or trang_thai %}<a class="nut nut-phu nut-nho" href="{{ url_for('danh_sach_don') }}">Xóa lọc</a>{% endif %}
+</form>
+
+<div class="the bang-cuon">
+  <table>
+    <thead>
+      <tr><th>Mã đơn</th><th>Ngày đặt</th><th>Khách</th><th>Trạng thái</th><th class="so">Tổng tiền</th></tr>
+    </thead>
+    <tbody>
+      {% for d in don %}
+      <tr class="{{ 'dong-ngung' if d.trang_thai == 'DA_HUY' }}">
+        <td><a href="{{ url_for('chi_tiet_don', ma_don=d._id) }}">{{ d._id }}</a></td>
+        <td>{{ d.ngay_dat|ngay }}</td>
+        <td>{{ ten_kh.get(d.ma_kh, d.ma_kh) }} <span class="phu">{{ d.ma_kh }}</span></td>
+        <td><span class="trang-thai {{ trang_thai_lop.get(d.trang_thai, '') }}">{{ d.trang_thai|trang_thai }}</span></td>
+        <td class="so">{{ d.tong_tien|tien }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="phu">Không có đơn hàng nào khớp bộ lọc.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {{ phan_trang(pt) }}
+</div>
+{% endblock %}

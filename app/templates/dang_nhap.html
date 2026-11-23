@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block tieu_de %}Đăng nhập{% endblock %}
+{% block noi_dung %}
+<div class="the hop-dang-nhap">
+  <h2>Đăng nhập hệ thống</h2>
+  <p class="phu">Dành cho nhân viên: kinh doanh, kho, kế toán.</p>
+  <form method="post">
+    <div class="truong">
+      <label class="nhan-form" for="ten_dang_nhap">Tên đăng nhập</label>
+      <input type="text" id="ten_dang_nhap" name="ten_dang_nhap" required autofocus autocomplete="username">
+    </div>
+    <div class="truong">
+      <label class="nhan-form" for="mat_khau">Mật khẩu</label>
+      <input type="password" id="mat_khau" name="mat_khau" required autocomplete="current-password">
+    </div>
+    <button type="submit" style="width:100%;max-width:520px">Đăng nhập</button>
+  </form>
+</div>
+{% endblock %}

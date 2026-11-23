@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block tieu_de %}Đơn {{ don._id }}{% endblock %}
+{% block noi_dung %}
+<div class="the-tieu-de" style="margin-bottom:18px">
+  <div>
+    <div class="phu">{{ khach.ten_kh if khach else don.ma_kh }} · {{ don.ma_kh }} · {{ don.ngay_dat|ngay }}</div>
+  </div>
+  <div class="hang-ngang">
+    <span class="trang-thai {{ lop }}">{{ don.trang_thai|trang_thai }}</span>
+    {% if co_the_huy and co_quyen('huy_don') %}
+    <form method="post" action="{{ url_for('huy_don', ma_don=don._id) }}"
+          data-confirm="Hủy đơn {{ don._id }}? Đơn vẫn được giữ lại để lưu vết nhưng không tính vào báo cáo.">
+      <button type="submit" class="nut-do nut-nho">Hủy đơn</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% if huy %}
+<div class="thong-bao loi">Đơn này đã bị hủy. Không thể thanh toán thêm. Đơn vẫn xuất hiện trong danh sách để lưu vết.</div>
+{% endif %}
+
+<div class="so-lieu-hang">
+  <div class="kpi"><div class="nhan">Tổng tiền</div><div class="gia-tri">{{ don.tong_tien|tien }}</div></div>
+  <div class="kpi"><div class="nhan">Đã thanh toán</div><div class="gia-tri">{{ da_tra|tien }}</div></div>
+  <div class="kpi {{ 'canh-bao' if con_no > 0 }}"><div class="nhan">Còn nợ</div><div class="gia-tri">{{ con_no|tien }}</div></div>
+</div>
+
+<div class="cot-2">
+  <div class="the">
+    <div class="the-tieu-de">
+      <h2>Thanh toán</h2>
+      <span class="phu">{{ phan_tram }}%</span>
+    </div>
+    <div class="thanh-tien-do"><div style="width: {{ phan_tram }}%"></div></div>
+
+    {% if con_no > 0 and not huy and co_quyen('thanh_toan') %}
+    <form method="post" action="{{ url_for('thanh_toan', ma_don=don._id) }}" class="thanh-thao-tac">
+      <input type="number" name="so_tien" min="1" max="{{ con_no }}" placeholder="Số tiền (tối đa {{ con_no }})" required>
+      <select name="phuong_thuc">
+        <option value="TIEN_MAT">Tiền mặt</option>
+        <option value="CHUYEN_KHOAN">Chuyển khoản</option>
+      </select>
+      <button type="submit">Ghi nhận</button>
+    </form>
+    {% elif con_no <= 0 %}
+    <p class="phu" style="margin-top:14px">Đơn đã thanh toán đủ.</p>
+    {% endif %}
+
+    {% if thanh_toan %}
+    <div class="bang-cuon" style="margin-top:16px">
+      <table>
+        <thead><tr><th>Mã TT</th><th>Phương thức</th><th class="so">Số tiền</th></tr></thead>
+        <tbody>
+          {% for t in thanh_toan %}
+          <tr><td>{{ t._id }}</td><td>{{ t.phuong_thuc }}</td><td class="so">{{ t.so_tien|tien }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="the">
+    <div class="the-tieu-de"><h2>Diễn biến</h2></div>
+    <ul class="timeline">
+      {% for m in moc %}
+      <li>
+        <div class="tieu">{{ m.tieu_de }}</div>
+        <div class="mo-ta">{{ m.thoi_gian|ngay }} · {{ m.mo_ta }}</div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<div class="the bang-cuon">
+  <div class="the-tieu-de"><h2>Chi tiết hàng</h2></div>
+  <table>
+    <thead><tr><th>Sản phẩm</th><th>Màu</th><th>Size</th><th class="so">Số lượng</th><th class="so">Đơn giá</th><th class="so">Thành tiền</th></tr></thead>
+    <tbody>
+      {% for d in don.chi_tiet %}
+      <tr>
+        <td>{{ d.ma_sp }}</td>
+        <td>{{ d.mau or '—' }}</td>
+        <td>{{ d.size or '—' }}</td>
+        <td class="so">{{ d.so_luong }}</td>
+        <td class="so">{{ d.don_gia|tien }}</td>
+        <td class="so">{{ (d.so_luong * d.don_gia)|tien }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr><th colspan="5" class="so">Tổng cộng</th><th class="so">{{ don.tong_tien|tien }}</th></tr>
+    </tfoot>
+  </table>
+</div>
+
+<details class="the json">
+  <summary>Xem document MongoDB của đơn này</summary>
+  <p class="phu">Đây là document đúng như được lưu trong collection <code>donhang</code>. Các dòng hàng nằm trong mảng <code>chi_tiet</code>, không tách thành bảng riêng.</p>
+  <pre class="json">{{ json_don }}</pre>
+</details>
+
+<p><a href="{{ url_for('danh_sach_don') }}">← Quay lại danh sách</a></p>
+{% endblock %}

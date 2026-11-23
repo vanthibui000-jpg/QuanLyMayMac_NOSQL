@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block tieu_de %}Không có quyền truy cập{% endblock %}
+{% block noi_dung %}
+<div class="the hop-dang-nhap">
+  <h2>Bạn không có quyền thực hiện thao tác này</h2>
+  <p class="phu">
+    {% if nguoi_dung %}Vai trò {{ nguoi_dung.vai_tro_nhan }} không được phép dùng chức năng này.{% endif %}
+    Nếu cần dùng, hãy liên hệ người quản lý để được cấp quyền.
+  </p>
+  <p><a class="nut" href="{{ url_for('trang_chu') }}">Về trang chủ</a></p>
+</div>
+{% endblock %}

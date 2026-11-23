@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% from "_macros.html" import phan_trang %}
+{% block tieu_de %}Khách hàng{% endblock %}
+{% block noi_dung %}
+<div class="the-tieu-de">
+  <span class="phu">Ngừng hoạt động thay vì xóa, để giữ lịch sử đơn của khách.</span>
+  {% if co_quyen('ql_khach') %}<a class="nut" href="{{ url_for('khach_moi') }}">+ Thêm khách hàng</a>{% endif %}
+</div>
+
+<form method="get" class="the thanh-loc">
+  <div class="o-tim">
+    <label for="q">Tìm theo tên hoặc mã</label>
+    <input type="search" id="q" name="q" value="{{ q }}" placeholder="Ví dụ: An Vũ, KH0012">
+  </div>
+  <button type="submit" class="nut-phu nut-nho">Tìm</button>
+  {% if q %}<a class="nut nut-phu nut-nho" href="{{ url_for('ds_khach_hang') }}">Xóa lọc</a>{% endif %}
+</form>
+
+<div class="the bang-cuon">
+  <table>
+    <thead>
+      <tr><th>Mã</th><th>Tên khách hàng</th><th>Điện thoại</th><th class="so">Số đơn</th><th>Trạng thái</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for kh in ds %}
+      <tr class="{{ 'dong-ngung' if kh.hoat_dong is false }}">
+        <td>{{ kh._id }}</td>
+        <td>{{ kh.ten_kh }}</td>
+        <td>{{ kh.sdt }}</td>
+        <td class="so">{{ so_don.get(kh._id, 0) }}</td>
+        <td>
+          {% if kh.hoat_dong is false %}
+            <span class="trang-thai huy">Ngừng hoạt động</span>
+          {% else %}
+            <span class="trang-thai da">Đang hoạt động</span>
+          {% endif %}
+        </td>
+        <td class="hang-ngang" style="justify-content:flex-end">
+          {% if co_quyen('ql_khach') %}
+          <a class="nut nut-phu nut-nho" href="{{ url_for('khach_sua', ma_kh=kh._id) }}">Sửa</a>
+          <form method="post" action="{{ url_for('khach_trang_thai', ma_kh=kh._id) }}"
+                data-confirm="{{ 'Cho khách ' ~ kh._id ~ ' hoạt động lại?' if kh.hoat_dong is false else 'Ngừng hoạt động khách ' ~ kh._id ~ '? Khách sẽ không đặt được đơn mới.' }}">
+            <button type="submit" class="nut-nho {{ 'nut-phu' if kh.hoat_dong is false else 'nut-do' }}">
+              {{ 'Kích hoạt' if kh.hoat_dong is false else 'Ngừng' }}
+            </button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="phu">Không tìm thấy khách hàng nào.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {{ phan_trang(pt) }}
+</div>
+{% endblock %}

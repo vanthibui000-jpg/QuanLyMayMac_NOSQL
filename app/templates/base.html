@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block tieu_de %}Quản lý công ty may mặc{% endblock %} · Order Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script>
+    /* Áp dụng trạng thái thu gọn sidebar trước khi vẽ trang để không bị nháy. */
+    try { if (localStorage.getItem('oms.sidebar') === 'collapsed') document.documentElement.classList.add('sidebar-collapsed'); } catch (e) {}
+  </script>
+</head>
+<body>
+  <input type="checkbox" id="mo-menu" class="an" aria-hidden="true" tabindex="-1">
+  <div class="app">
+    {% if nguoi_dung %}
+    <aside class="sidebar" id="sidebar" aria-label="Menu chính">
+      <div class="sidebar-brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="m3 7 9 5 9-5M12 12v10"/></svg>
+        </span>
+        <span class="brand-text">
+          <span class="brand-name">ORDER MANAGEMENT SYSTEM</span>
+          <span class="brand-version">Phiên bản {{ app_version }}</span>
+        </span>
+      </div>
+
+      <nav class="sidebar-nav">
+        {% for nhom in menu %}
+        <div class="nav-heading">{{ nhom.tieu_de }}</div>
+        {% for m in nhom.muc %}
+          {% if m.sap_co %}
+          <span class="nav-link disabled" aria-disabled="true" title="{{ m.nhan }} (sắp có)">
+            <i class="bi bi-{{ m.icon }}" aria-hidden="true"></i><span class="nav-text">{{ m.nhan }}</span><span class="nav-tag">Sắp có</span>
+          </span>
+          {% else %}
+          <a class="nav-link{{ ' active' if m.active }}" href="{{ m.href }}" title="{{ m.nhan }}"{% if m.active %} aria-current="page"{% endif %}{% if m.neo %} data-neo="{{ m.neo }}"{% endif %}>
+            <i class="bi bi-{{ m.icon }}" aria-hidden="true"></i><span class="nav-text">{{ m.nhan }}</span>
+          </a>
+          {% endif %}
+        {% endfor %}
+        {% endfor %}
+      </nav>
+
+      <div class="sidebar-foot">
+        <button type="button" class="sidebar-toggle" id="nut-thu-gon" aria-pressed="false" title="Thu gọn menu">
+          <i class="bi bi-chevron-double-left" aria-hidden="true"></i><span class="toggle-text">Thu gọn menu</span>
+        </button>
+      </div>
+    </aside>
+    <label for="mo-menu" class="sidebar-overlay" aria-hidden="true"></label>
+    {% endif %}
+
+    <div class="app-main">
+      <header class="topbar">
+        {% if nguoi_dung %}
+        <label for="mo-menu" class="icon-btn topbar-menu" aria-label="Mở menu" role="button"><i class="bi bi-list" aria-hidden="true"></i></label>
+        {% else %}
+        <span class="brand-mark" aria-hidden="true" style="width:34px;height:34px;flex-basis:34px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="m3 7 9 5 9-5M12 12v10"/></svg>
+        </span>
+        {% endif %}
+
+        <div class="page-heading">
+          {% if nguoi_dung %}
+          <nav aria-label="Đường dẫn">
+            <ol class="breadcrumb">
+              {% for b in breadcrumb %}
+                {% if loop.last %}
+                <li aria-current="page">{{ b.nhan }}</li>
+                {% elif b.url %}
+                <li><a href="{{ b.url }}">{{ b.nhan }}</a></li>
+                {% else %}
+                <li>{{ b.nhan }}</li>
+                {% endif %}
+              {% endfor %}
+            </ol>
+          </nav>
+          {% endif %}
+          <h1 class="page-title">{{ self.tieu_de() }}</h1>
+        </div>
+
+        {% if nguoi_dung %}
+        {% set tb = thong_bao_he_thong() %}
+        <div class="topbar-tools">
+          {% if o_tim_kiem %}
+          <form class="topbar-search" method="get" action="{{ o_tim_kiem.url }}" role="search">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input type="search" name="q" placeholder="{{ o_tim_kiem.goi_y }}" aria-label="{{ o_tim_kiem.goi_y }}">
+          </form>
+          {% endif %}
+
+          <div class="dropdown" data-dropdown>
+            <button type="button" class="icon-btn" aria-label="Thông báo{{ ' (' ~ tb|length ~ ' mới)' if tb }}" aria-haspopup="true" aria-expanded="false">
+              <i class="bi bi-bell" aria-hidden="true"></i>
+              {% if tb %}<span class="badge-count">{{ tb|length }}</span>{% endif %}
+            </button>
+            <div class="dropdown-menu" role="menu">
+              <div class="dropdown-title">Thông báo</div>
+              {% for t in tb %}
+              <a class="dropdown-item" href="{{ t.url }}" role="menuitem">
+                <i class="bi bi-{{ t.icon }}" aria-hidden="true"></i>
+                <span><span class="dd-title">{{ t.tieu_de }}</span><span class="dd-sub">{{ t.mo_ta }}</span></span>
+              </a>
+              {% else %}
+              <div class="dropdown-empty">Không có thông báo mới</div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="dropdown" data-dropdown>
+            <button type="button" class="avatar-btn" aria-label="Menu tài khoản" aria-haspopup="true" aria-expanded="false">
+              <span class="avatar" aria-hidden="true">{{ nguoi_dung.ten[:2] }}</span>
+              <span class="avatar-name">{{ nguoi_dung.ten }}</span>
+              <i class="bi bi-chevron-down" aria-hidden="true" style="font-size:12px"></i>
+            </button>
+            <div class="dropdown-menu" role="menu">
+              <div class="account-head">
+                <strong>{{ nguoi_dung.ten }}</strong>
+                <span class="vai-tro">{{ nguoi_dung.vai_tro_nhan }}</span>
+              </div>
+              <form method="post" action="{{ url_for('dang_xuat') }}">
+                <button type="submit" class="dropdown-item-btn" role="menuitem"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Đăng xuất</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </header>
+
+      <main class="content">
+        {% block noi_dung %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <div class="toast-zone" id="toast-zone" aria-live="polite">
+    {% for loai, noi_dung in get_flashed_messages(with_categories=true) %}
+    <div class="toast {{ loai }}" role="{{ 'alert' if loai == 'loi' else 'status' }}">
+      <i class="bi {{ 'bi-check-circle-fill' if loai == 'ok' else ('bi-x-octagon-fill' if loai == 'loi' else 'bi-info-circle-fill') }} toast-icon" aria-hidden="true"></i>
+      <div class="toast-body">{{ noi_dung }}</div>
+      <button type="button" class="toast-close" aria-label="Đóng thông báo">&times;</button>
+    </div>
+    {% endfor %}
+  </div>
+
+  <dialog class="modal" id="hop-xac-nhan" aria-labelledby="hop-xac-nhan-tieu-de">
+    <div class="modal-body">
+      <div class="modal-title" id="hop-xac-nhan-tieu-de">Xác nhận thao tác</div>
+      <p class="modal-text" id="hop-xac-nhan-noi-dung"></p>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="nut-phu" id="hop-xac-nhan-huy">Hủy bỏ</button>
+      <button type="button" id="hop-xac-nhan-dong-y">Đồng ý</button>
+    </div>
+  </dialog>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

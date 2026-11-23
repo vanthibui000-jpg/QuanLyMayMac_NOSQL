@@ -1,0 +1,17 @@
+{# Macro dùng chung cho các trang danh sách. #}
+
+{% macro phan_trang(pt) %}
+<div class="phan-trang">
+  <span class="phu">{{ pt.tong }} bản ghi · trang {{ pt.trang }} / {{ pt.so_trang }}</span>
+  {% if pt.truoc or pt.sau %}
+  <div class="hang-ngang">
+    {% if pt.truoc %}<a class="nut nut-phu nut-nho" href="{{ pt.truoc }}">← Trước</a>{% endif %}
+    {% if pt.sau %}<a class="nut nut-phu nut-nho" href="{{ pt.sau }}">Sau →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{% macro trang_thai_badge(ma, nhan, lop) %}
+<span class="trang-thai {{ lop }}">{{ nhan }}</span>
+{% endmacro %}

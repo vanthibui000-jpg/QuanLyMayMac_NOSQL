@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block tieu_de %}Kho nguyên vật liệu{% endblock %}
+{% block noi_dung %}
+{% if co_quyen('kho_ghi') and muc != 'canh-bao' %}
+<form method="post" class="the">
+  <div class="the-tieu-de">
+    <h2>Lập phiếu</h2>
+    <div class="tab-loai" role="radiogroup" aria-label="Loại phiếu">
+      <input type="radio" name="loai" id="loai-nhap" value="NHAP" {{ 'checked' if loai_mac_dinh != 'XUAT' }}>
+      <label for="loai-nhap">Nhập kho</label>
+      <input type="radio" name="loai" id="loai-xuat" value="XUAT" {{ 'checked' if loai_mac_dinh == 'XUAT' }}>
+      <label for="loai-xuat">Xuất kho</label>
+    </div>
+  </div>
+  <p class="phu" style="margin-top:-4px">Phiếu xuất sẽ bị hủy toàn bộ nếu bất kỳ dòng nào không đủ tồn kho.</p>
+
+  <div style="margin-top:14px">
+    {% for i in range(so_dong) %}
+    <div class="dong-kho">
+      <select name="ma_nvl" aria-label="Nguyên vật liệu">
+        <option value="">-- chọn nguyên vật liệu --</option>
+        {% for v in nvl %}
+          <option value="{{ v._id }}">{{ v._id }} — {{ v.ten_nvl }} (tồn {{ v.so_luong_ton }})</option>
+        {% endfor %}
+      </select>
+      <input type="number" name="so_luong" min="1" step="1" placeholder="Số lượng" aria-label="Số lượng">
+    </div>
+    {% endfor %}
+  </div>
+  <p style="text-align:right;margin-top:10px"><button type="submit">Lập phiếu</button></p>
+</form>
+{% endif %}
+
+<div class="cot-2">
+  <div class="the bang-cuon">
+    <div class="the-tieu-de"><h2>{{ 'Cảnh báo tồn kho' if muc == 'canh-bao' else 'Tồn kho' }}</h2><a class="nut nut-phu nut-nho" href="{{ url_for('xuat_csv', ten='ton-kho') }}">Xuất CSV</a><span class="phu">Tô vàng: dưới {{ nguong }}</span></div>
+    <table>
+      <thead><tr><th>Mã</th><th>Tên</th><th class="so">Tồn</th></tr></thead>
+      <tbody>
+        {% for v in nvl_bang %}
+        <tr class="{{ 'canh-bao' if v.so_luong_ton < nguong }}">
+          <td>{{ v._id }}</td>
+          <td>{{ v.ten_nvl }}{% if v.so_luong_ton < nguong %}<span class="tag-het">Sắp hết</span>{% endif %}</td>
+          <td class="so">{{ v.so_luong_ton }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" class="phu">Không có nguyên vật liệu nào dưới {{ nguong }}.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="the bang-cuon">
+    <div class="the-tieu-de">
+      <h2>Phiếu gần đây</h2>
+      <div class="hang-ngang">
+        <a class="nut {{ 'nut-phu' if loc_loai }} nut-nho" href="{{ url_for('kho') }}">Tất cả</a>
+        <a class="nut {{ 'nut-phu' if loc_loai != 'NHAP' }} nut-nho" href="{{ url_for('kho', loai='NHAP') }}">Nhập</a>
+        <a class="nut {{ 'nut-phu' if loc_loai != 'XUAT' }} nut-nho" href="{{ url_for('kho', loai='XUAT') }}">Xuất</a>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>Mã</th><th>Loại</th><th>Ngày</th><th class="so">Số dòng</th></tr></thead>
+      <tbody>
+        {% for p in phieu %}
+        <tr>
+          <td>{{ p._id }}</td>
+          <td><span class="trang-thai {{ 'da' if p.loai == 'NHAP' else 'cho' }}">{{ 'Nhập' if p.loai == 'NHAP' else 'Xuất' }}</span></td>
+          <td>{{ p.ngay_lap|ngay }}</td>
+          <td class="so">{{ p.chi_tiet|length }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" class="phu">Chưa có phiếu nào.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

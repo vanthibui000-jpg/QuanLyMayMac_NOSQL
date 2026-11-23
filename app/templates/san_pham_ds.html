@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% from "_macros.html" import phan_trang %}
+{% block tieu_de %}Sản phẩm{% endblock %}
+{% block noi_dung %}
+<div class="the-tieu-de">
+  <span class="phu">Ngừng bán thay vì xóa, để giữ lịch sử đơn đã bán.</span>
+  {% if co_quyen('ql_san_pham') %}<a class="nut" href="{{ url_for('san_pham_moi') }}">+ Thêm sản phẩm</a>{% endif %}
+</div>
+
+<form method="get" class="the thanh-loc">
+  <div class="o-tim">
+    <label for="q">Tìm theo tên hoặc mã</label>
+    <input type="search" id="q" name="q" value="{{ q }}" placeholder="Ví dụ: áo, SP0012">
+  </div>
+  <button type="submit" class="nut-phu nut-nho">Tìm</button>
+  {% if q %}<a class="nut nut-phu nut-nho" href="{{ url_for('ds_san_pham') }}">Xóa lọc</a>{% endif %}
+</form>
+
+<div class="the bang-cuon">
+  <table>
+    <thead>
+      <tr><th>Mã</th><th>Tên sản phẩm</th><th>Màu</th><th>Size</th><th class="so">Đơn giá</th><th>Trạng thái</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for sp in ds %}
+      <tr class="{{ 'dong-ngung' if sp.hoat_dong is false }}">
+        <td>{{ sp._id }}</td>
+        <td>{{ sp.ten_sp }}</td>
+        <td>{{ sp.mau|join(', ') or '—' }}</td>
+        <td>{{ sp.size|join(', ') or '—' }}</td>
+        <td class="so">{{ sp.don_gia|tien }}</td>
+        <td>
+          {% if sp.hoat_dong is false %}
+            <span class="trang-thai huy">Ngừng bán</span>
+          {% else %}
+            <span class="trang-thai da">Đang bán</span>
+          {% endif %}
+        </td>
+        <td class="hang-ngang" style="justify-content:flex-end">
+          {% if co_quyen('ql_san_pham') %}
+          <a class="nut nut-phu nut-nho" href="{{ url_for('san_pham_sua', ma_sp=sp._id) }}">Sửa</a>
+          <form method="post" action="{{ url_for('san_pham_trang_thai', ma_sp=sp._id) }}"
+                data-confirm="{{ 'Mở bán lại sản phẩm ' ~ sp._id ~ '?' if sp.hoat_dong is false else 'Ngừng bán sản phẩm ' ~ sp._id ~ '? Đơn cũ vẫn giữ nguyên.' }}">
+            <button type="submit" class="nut-nho {{ 'nut-phu' if sp.hoat_dong is false else 'nut-do' }}">
+              {{ 'Mở bán' if sp.hoat_dong is false else 'Ngừng bán' }}
+            </button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7" class="phu">Không tìm thấy sản phẩm nào.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {{ phan_trang(pt) }}
+</div>
+{% endblock %}

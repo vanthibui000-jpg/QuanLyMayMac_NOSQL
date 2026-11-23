@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block tieu_de %}{{ 'Thêm sản phẩm' if la_moi else 'Sửa sản phẩm ' ~ sp._id }}{% endblock %}
+{% block noi_dung %}
+<div class="cot-2">
+  <form method="post" class="the">
+    <h2>{{ 'Thông tin sản phẩm mới' if la_moi else 'Thông tin sản phẩm' }}</h2>
+    {% if not la_moi %}<p class="ghi-chu-form">Mã {{ sp._id }} không đổi. Đơn giá mới chỉ áp dụng cho đơn lập sau này.</p>{% endif %}
+
+    <div class="truong">
+      <label class="nhan-form" for="ten_sp">Tên sản phẩm *</label>
+      <input type="text" id="ten_sp" name="ten_sp" value="{{ sp.ten_sp or '' }}" required maxlength="120">
+    </div>
+    <div class="truong">
+      <label class="nhan-form" for="don_gia">Đơn giá (VND) *</label>
+      <input type="number" id="don_gia" name="don_gia" value="{{ sp.don_gia or '' }}" min="1" step="1" required>
+    </div>
+    <div class="truong">
+      <label class="nhan-form" for="mau">Màu (cách nhau bằng dấu phẩy)</label>
+      <input type="text" id="mau" name="mau" value="{{ sp.mau|join(', ') if sp.mau is not string else sp.mau }}" placeholder="Trắng, Đen, Be">
+    </div>
+    <div class="truong">
+      <label class="nhan-form" for="size">Size (cách nhau bằng dấu phẩy)</label>
+      <input type="text" id="size" name="size" value="{{ sp.size|join(', ') if sp.size is not string else sp.size }}" placeholder="S, M, L, XL">
+    </div>
+    <div class="truong">
+      <label class="nhan-form" for="barcode">Mã vạch (không bắt buộc)</label>
+      <input type="text" id="barcode" name="barcode" value="{{ sp.barcode or '' }}" maxlength="50">
+    </div>
+
+    <div class="hang-ngang">
+      <button type="submit">Lưu</button>
+      <a class="nut nut-phu" href="{{ url_for('ds_san_pham') }}">Hủy</a>
+    </div>
+  </form>
+
+  <div class="the">
+    <h2>Lưu ý</h2>
+    <p class="phu">Các màu và size nhập ở đây sẽ hiện thành chip trong form đặt hàng.</p>
+    <p class="phu">Sản phẩm không xóa được để giữ lịch sử đơn. Nếu không còn bán, dùng nút "Ngừng bán" ở danh sách.</p>
+  </div>
+</div>
+{% endblock %}
