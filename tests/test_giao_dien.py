@@ -14,8 +14,13 @@ def test_trang_chu_la_quang_cao_khong_nhet_luoi_san_pham(tao_client):
     # Các khối chiến dịch Aristino phải có mặt
     for khoi in ["hero-slider", "Tiếp Nối Huyền Thoại", "lookbook-strip", "story-pillars", "policy-strip"]:
         assert khoi in html, khoi
-    # Đã xóa tên ATELIER V, khối countdown, 3 từ VUN/ĐAN/RẠNG, dòng Look 01..04 và địa chỉ showroom theo yêu cầu
-    for cam in ["ATELIER V", "flash-countdown", 'class="promo-band"', "VUN", "ĐAN", "RẠNG", "Look 01", "Look 02", "Look 03", "Look 04", "Phố Huế", "Đồng Khởi", "Hà Nội", "TP.HCM"]:
+    # Đã xóa tên ATELIER V, khối countdown, 3 từ VUN/ĐAN/RẠNG, dòng Look 01..04, 3 nhãn hero eyebrow và địa chỉ showroom theo yêu cầu
+    for cam in [
+        "ATELIER V", "flash-countdown", 'class="promo-band"', "VUN", "ĐAN", "RẠNG",
+        "Look 01", "Look 02", "Look 03", "Look 04",
+        "Fall – Winter 2026 Campaign", "Bespoke Tailoring", "New Arrivals · 2026",
+        "Phố Huế", "Đồng Khởi", "Hà Nội", "TP.HCM",
+    ]:
         assert cam not in html, cam
     # Không nhét lưới sản phẩm bán lẻ (product-grid) và nút thêm giỏ trực tiếp vào trang chủ
     assert 'class="product-grid"' not in html
