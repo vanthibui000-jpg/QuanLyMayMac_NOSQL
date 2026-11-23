@@ -1,7 +1,6 @@
-"""Truy vấn báo cáo và thống kê (aggregation pipeline).
+"""Truy vấn báo cáo và thống kê bằng MongoDB Aggregation Pipeline.
 
-Mọi báo cáo bỏ qua đơn đã hủy (trang_thai = DA_HUY) ở stage $match đầu tiên.
-Nếu chưa có đơn hủy nào thì kết quả không đổi so với trước.
+Mọi báo cáo doanh thu / bán chạy bỏ qua đơn đã hủy (`DA_HUY`) ngay ở stage `$match` đầu tiên.
 """
 
 KHONG_TINH_DON_HUY = {"$match": {"trang_thai": {"$ne": "DA_HUY"}}}
@@ -27,6 +26,7 @@ def top_san_pham(db, n=5):
         {"$unwind": "$chi_tiet"},
         {"$group": {
             "_id": "$chi_tiet.ma_sp",
+            "ten_sp": {"$first": "$chi_tiet.ten_sp"},
             "so_luong": {"$sum": "$chi_tiet.so_luong"},
             "doanh_thu": {"$sum": {"$multiply": ["$chi_tiet.so_luong", "$chi_tiet.don_gia"]}},
         }},
@@ -36,7 +36,7 @@ def top_san_pham(db, n=5):
         {"$project": {
             "_id": 0,
             "ma_sp": "$_id",
-            "ten_sp": {"$arrayElemAt": ["$sp.ten_sp", 0]},
+            "ten_sp": {"$ifNull": [{"$arrayElemAt": ["$sp.ten_sp", 0]}, "$ten_sp"]},
             "so_luong": 1,
             "doanh_thu": 1,
         }},
@@ -45,7 +45,7 @@ def top_san_pham(db, n=5):
 
 
 def ban_chay_theo_mau_size(db):
-    """Số lượng bán theo tổ hợp Màu × Size (đúng bảng đặt hàng trong thiết kế)."""
+    """Số lượng bán theo tổ hợp Màu × Size."""
     pipeline = [
         KHONG_TINH_DON_HUY,
         {"$unwind": "$chi_tiet"},
@@ -59,36 +59,52 @@ def ban_chay_theo_mau_size(db):
     return list(db.donhang.aggregate(pipeline))
 
 
-def cong_no_khach_hang(db, limit=10):
-    """Công nợ = tổng tiền đã mua - tổng tiền đã thanh toán, theo từng khách hàng."""
+def doanh_thu_theo_danh_muc(db):
+    """Doanh thu và số lượng bán gộp theo từng Danh mục thời trang."""
     pipeline = [
         KHONG_TINH_DON_HUY,
-        {"$lookup": {"from": "thanhtoan", "localField": "_id", "foreignField": "ma_don", "as": "tt"}},
-        {"$addFields": {"da_tra": {"$sum": "$tt.so_tien"}}},
+        {"$unwind": "$chi_tiet"},
+        {"$lookup": {"from": "sanpham", "localField": "chi_tiet.ma_sp", "foreignField": "_id", "as": "sp"}},
+        {"$unwind": {"path": "$sp", "preserveNullAndEmptyArrays": True}},
         {"$group": {
-            "_id": "$ma_kh",
-            "tong_mua": {"$sum": "$tong_tien"},
-            "da_tra": {"$sum": "$da_tra"},
+            "_id": "$sp.ma_dm",
+            "so_luong": {"$sum": "$chi_tiet.so_luong"},
+            "doanh_thu": {"$sum": {"$multiply": ["$chi_tiet.so_luong", "$chi_tiet.don_gia"]}},
         }},
+        {"$lookup": {"from": "danhmuc", "localField": "_id", "foreignField": "_id", "as": "dm"}},
         {"$project": {
             "_id": 0,
-            "ma_kh": "$_id",
-            "tong_mua": 1,
-            "da_tra": 1,
-            "cong_no": {"$subtract": ["$tong_mua", "$da_tra"]},
+            "ma_dm": "$_id",
+            "ten_dm": {"$ifNull": [{"$arrayElemAt": ["$dm.ten_dm", 0]}, "Khác"]},
+            "so_luong": 1,
+            "doanh_thu": 1,
         }},
-        {"$match": {"cong_no": {"$gt": 0}}},
-        {"$sort": {"cong_no": -1}},
-        {"$limit": limit},
+        {"$sort": {"doanh_thu": -1}},
     ]
     return list(db.donhang.aggregate(pipeline))
 
 
-def nvl_sap_het(db, nguong=500):
-    """Nguyên vật liệu có tồn kho dưới ngưỡng, dùng để lập yêu cầu mua vật tư."""
-    return list(
-        db.nguyenvatlieu.find(
-            {"so_luong_ton": {"$lt": nguong}},
-            {"_id": 1, "ten_nvl": 1, "so_luong_ton": 1},
-        ).sort("so_luong_ton", 1)
-    )
+def bien_the_sap_het(db, nguong=10):
+    """Danh sách các biến thể (Sản phẩm × Màu × Size) có tồn kho dưới ngưỡng."""
+    pipeline = [
+        {"$match": {"hoat_dong": {"$ne": False}}},
+        {"$unwind": "$bien_the"},
+        {"$match": {"bien_the.ton_kho": {"$lt": nguong}}},
+        {"$project": {
+            "_id": 0,
+            "ma_sp": "$_id",
+            "ten_sp": 1,
+            "mau": "$bien_the.mau",
+            "size": "$bien_the.size",
+            "ton_kho": "$bien_the.ton_kho",
+        }},
+        {"$sort": {"ton_kho": 1, "ma_sp": 1}},
+    ]
+    return list(db.sanpham.aggregate(pipeline))
+
+
+def thong_ke_trang_thai_don(db):
+    pipeline = [
+        {"$group": {"_id": "$trang_thai", "so_don": {"$sum": 1}, "tong_tien": {"$sum": "$tong_tien"}}},
+    ]
+    return {r["_id"]: r for r in db.donhang.aggregate(pipeline)}
