@@ -5,7 +5,7 @@
 <!-- BLOCK 1: FULL-BLEED EDITORIAL HERO SLIDER (PURE CAMPAIGN) -->
 <section class="hero-slider" id="hero-slider" aria-label="Chiến dịch nổi bật">
   <div class="hero-slide active">
-    <img src="{{ url_for('static', filename='img/hero_01_campaign.jpg') }}" alt="Chiến dịch Thu Đông 2026">
+    <img src="{{ url_for('static', filename='img/hero_01_campaign.jpg') }}?v=3" alt="Chiến dịch Thu Đông 2026">
     <div class="hero-scrim"></div>
     <div class="hero-content">
       <div class="container">
@@ -89,28 +89,24 @@
     <a href="{{ url_for('cua_hang', danh_muc='suits-blazer') }}" class="lookbook-tile">
       <img src="{{ url_for('static', filename='img/look_blazer.jpg') }}" alt="Suits & Blazer Thu Đông">
       <div class="lookbook-overlay">
-        <span class="lookbook-sub">Look 01 · Tailoring</span>
         <span class="lookbook-name">Blazer Len Dạ Ý</span>
       </div>
     </a>
     <a href="{{ url_for('cua_hang', danh_muc='ao-khoac') }}" class="lookbook-tile">
       <img src="{{ url_for('static', filename='img/look_trench.jpg') }}" alt="Măng tô Thu Đông">
       <div class="lookbook-overlay">
-        <span class="lookbook-sub">Look 02 · Outerwear</span>
         <span class="lookbook-name">Măng Tô Thu Đông</span>
       </div>
     </a>
     <a href="{{ url_for('cua_hang', danh_muc='ao-khoac') }}" class="lookbook-tile">
       <img src="{{ url_for('static', filename='img/look_overcoat.jpg') }}" alt="Overcoat tối giản">
       <div class="lookbook-overlay">
-        <span class="lookbook-sub">Look 03 · Architectural</span>
         <span class="lookbook-name">Overcoat Đen Tuyền</span>
       </div>
     </a>
     <a href="{{ url_for('cua_hang', danh_muc='ao-so-mi') }}" class="lookbook-tile">
       <img src="{{ url_for('static', filename='img/look_shirt_city.jpg') }}" alt="Sơ mi công sở">
       <div class="lookbook-overlay">
-        <span class="lookbook-sub">Look 04 · Business</span>
         <span class="lookbook-name">Sơ Mi Chuẩn Phom</span>
       </div>
     </a>

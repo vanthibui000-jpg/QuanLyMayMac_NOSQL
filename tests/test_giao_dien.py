@@ -14,8 +14,8 @@ def test_trang_chu_la_quang_cao_khong_nhet_luoi_san_pham(tao_client):
     # Các khối chiến dịch Aristino phải có mặt
     for khoi in ["hero-slider", "Tiếp Nối Huyền Thoại", "lookbook-strip", "story-pillars", "policy-strip"]:
         assert khoi in html, khoi
-    # Đã xóa tên ATELIER V, khối countdown, 3 từ VUN/ĐAN/RẠNG và địa chỉ showroom theo yêu cầu
-    for cam in ["ATELIER V", "flash-countdown", 'class="promo-band"', "VUN", "ĐAN", "RẠNG", "Phố Huế", "Đồng Khởi", "Hà Nội", "TP.HCM"]:
+    # Đã xóa tên ATELIER V, khối countdown, 3 từ VUN/ĐAN/RẠNG, dòng Look 01..04 và địa chỉ showroom theo yêu cầu
+    for cam in ["ATELIER V", "flash-countdown", 'class="promo-band"', "VUN", "ĐAN", "RẠNG", "Look 01", "Look 02", "Look 03", "Look 04", "Phố Huế", "Đồng Khởi", "Hà Nội", "TP.HCM"]:
         assert cam not in html, cam
     # Không nhét lưới sản phẩm bán lẻ (product-grid) và nút thêm giỏ trực tiếp vào trang chủ
     assert 'class="product-grid"' not in html
@@ -122,7 +122,7 @@ def test_tab_bo_suu_tap_va_thuong_hieu_doc_lap_khong_copy_thuong_hieu_khac(tao_c
         assert r.status_code == 200, url
         html = r.get_data(as_text=True)
         assert dau_hieu in html
-        for cam in ["Aristino", "ARISTINO", "Zara", "Uniqlo", "ATELIER V", "VUN", "ĐAN", "RẠNG", "Phố Huế", "Đồng Khởi", "Hà Nội", "TP.HCM"]:
+        for cam in ["Aristino", "ARISTINO", "Zara", "Uniqlo", "ATELIER V", "VUN", "ĐAN", "RẠNG", "Look 01", "Look 02", "Look 03", "Phố Huế", "Đồng Khởi", "Hà Nội", "TP.HCM"]:
             assert cam not in html, (url, cam)
     th_html = c.get("/thuong-hieu").get_data(as_text=True)
     assert "Xem Bộ Sưu Tập" not in th_html
