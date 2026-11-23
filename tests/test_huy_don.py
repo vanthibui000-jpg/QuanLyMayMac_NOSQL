@@ -1,80 +1,55 @@
-"""Kiểm thử nghiệp vụ hủy đơn và chặn thao tác với sản phẩm/khách ngừng hoạt động."""
+"""Kiểm thử hủy đơn hoàn tồn kho và chặn sản phẩm/khách ngừng hoạt động."""
 import pytest
 
 from app import queries, services
 from app.services import NghiepVuError
 
-
-def _tao_don(db, ma_don="DH0001"):
-    return services.dat_hang(db, ma_don, "KH0001", [
-        {"ma_sp": "SP0001", "so_luong": 10, "mau": "Trắng", "size": "M"},
-    ])
+GIAO_HANG = {"ho_ten": "Nguyễn Văn A", "sdt": "0900000001", "dia_chi": "128 Phố Huế, Hà Nội"}
 
 
-def test_huy_don_chua_thanh_toan(db):
-    _tao_don(db)
-    services.huy_don(db, "DH0001")
+def _ton(db, ma_sp="SP0001", mau="Trắng", size="M"):
+    sp = db.sanpham.find_one({"_id": ma_sp})
+    return next(b["ton_kho"] for b in sp["bien_the"] if b["mau"] == mau and b["size"] == size)
 
-    assert db.donhang.find_one({"_id": "DH0001"})["trang_thai"] == "DA_HUY"
-    assert db.hoadon.find_one({"ma_don": "DH0001"})["trang_thai"] == "DA_HUY"
-    # Document vẫn còn để lưu vết, nhưng không tính vào doanh thu
-    assert db.donhang.count_documents({}) == 1
+
+def test_huy_don_hoan_ton_kho_va_bo_khoi_bao_cao(db):
+    services.dat_hang(db, "DH000001", "KH0001", [{"ma_sp": "SP0001", "mau": "Trắng", "size": "M", "so_luong": 4}], GIAO_HANG)
+    assert _ton(db) == 11
+
+    services.huy_don(db, "DH000001", nguoi_huy="ADMIN")
+    assert _ton(db) == 15  # đã hoàn đủ 4 chiếc
+    assert db.donhang.find_one({"_id": "DH000001"})["trang_thai"] == "DA_HUY"
+    assert db.hoadon.find_one({"ma_don": "DH000001"})["trang_thai"] == "DA_HUY"
     assert queries.doanh_thu_theo_thang(db) == []
 
 
-def test_don_huy_khong_vao_cong_no_va_top_san_pham(db):
-    _tao_don(db, "DH0001")
-    _tao_don(db, "DH0002")
-    services.huy_don(db, "DH0002")
+def test_khach_chi_tu_huy_duoc_khi_cho_xac_nhan(db):
+    services.dat_hang(db, "DH000002", "KH0001", [{"ma_sp": "SP0001", "mau": "Trắng", "size": "M", "so_luong": 2}], GIAO_HANG)
+    services.cap_nhat_don_hang(db, "DH000002", trang_thai_moi="DANG_GIAO")
 
-    cong_no = queries.cong_no_khach_hang(db)
-    assert cong_no[0]["tong_mua"] == 1_000_000  # chỉ tính DH0001 (10 × 100.000)
-    top = queries.top_san_pham(db)
-    assert top[0]["so_luong"] == 10
+    with pytest.raises(NghiepVuError, match="Chờ xác nhận"):
+        services.huy_don(db, "DH000002", nguoi_huy="KH")
+    assert db.donhang.find_one({"_id": "DH000002"})["trang_thai"] == "DANG_GIAO"
 
-
-def test_huy_don_da_thanh_toan_bi_tu_choi(db):
-    _tao_don(db)
-    services.ghi_nhan_thanh_toan(db, "TT0001", "DH0001", 100_000)
-
-    with pytest.raises(NghiepVuError, match="đã có thanh toán"):
-        services.huy_don(db, "DH0001")
-    assert db.donhang.find_one({"_id": "DH0001"})["trang_thai"] == "THANH_TOAN_MOT_PHAN"
+    # Admin vẫn hủy được đơn đang giao và hoàn tồn kho
+    services.huy_don(db, "DH000002", nguoi_huy="ADMIN")
+    assert _ton(db) == 15
 
 
-def test_huy_lai_bi_tu_choi(db):
-    _tao_don(db)
-    services.huy_don(db, "DH0001")
+def test_khong_huy_duoc_don_da_hoan_thanh(db):
+    services.dat_hang(db, "DH000003", "KH0001", [{"ma_sp": "SP0001", "mau": "Trắng", "size": "M", "so_luong": 1}], GIAO_HANG)
+    services.cap_nhat_don_hang(db, "DH000003", trang_thai_moi="HOAN_THANH")
 
-    with pytest.raises(NghiepVuError, match="đã bị hủy trước đó"):
-        services.huy_don(db, "DH0001")
-
-
-def test_thanh_toan_don_da_huy_bi_tu_choi(db):
-    _tao_don(db)
-    services.huy_don(db, "DH0001")
-
-    with pytest.raises(NghiepVuError, match="đã bị hủy"):
-        services.ghi_nhan_thanh_toan(db, "TT0001", "DH0001", 100_000)
-    assert db.thanhtoan.count_documents({}) == 0
+    with pytest.raises(NghiepVuError, match="đã hoàn thành"):
+        services.huy_don(db, "DH000003", nguoi_huy="ADMIN")
 
 
-def test_huy_don_khong_ton_tai(db):
-    with pytest.raises(NghiepVuError, match="không tồn tại"):
-        services.huy_don(db, "DH9999")
-
-
-def test_dat_hang_san_pham_ngung_ban_bi_tu_choi(db):
+def test_dat_hang_san_pham_hoac_khach_ngung_hoat_dong_bi_tu_choi(db):
     db.sanpham.update_one({"_id": "SP0001"}, {"$set": {"hoat_dong": False}})
+    with pytest.raises(NghiepVuError, match="ngừng kinh doanh"):
+        services.dat_hang(db, "DH000004", "KH0001", [{"ma_sp": "SP0001", "mau": "Trắng", "size": "M", "so_luong": 1}], GIAO_HANG)
 
-    with pytest.raises(NghiepVuError, match="đã ngừng bán"):
-        _tao_don(db)
-    assert db.donhang.count_documents({}) == 0
-
-
-def test_dat_hang_khach_ngung_hoat_dong_bi_tu_choi(db):
+    db.sanpham.update_one({"_id": "SP0001"}, {"$set": {"hoat_dong": True}})
     db.khachhang.update_one({"_id": "KH0001"}, {"$set": {"hoat_dong": False}})
-
-    with pytest.raises(NghiepVuError, match="đã ngừng hoạt động"):
-        _tao_don(db)
-    assert db.donhang.count_documents({}) == 0
+    with pytest.raises(NghiepVuError, match="ngừng hoạt động"):
+        services.dat_hang(db, "DH000005", "KH0001", [{"ma_sp": "SP0001", "mau": "Trắng", "size": "M", "so_luong": 1}], GIAO_HANG)

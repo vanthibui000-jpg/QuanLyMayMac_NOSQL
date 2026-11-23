@@ -1,4 +1,4 @@
-"""Fixture dùng chung cho các test: CSDL maymac_test có dữ liệu mẫu nhỏ, tự xóa sau mỗi test."""
+"""Fixture dùng chung cho bộ test: CSDL maymac_test với 3 vai trò (ADMIN, NV, KH)."""
 import hashlib
 import os
 import sys
@@ -17,16 +17,14 @@ TEST_DB = os.getenv("MONGO_TEST_DB", "maymac_test")
 
 MAT_KHAU_TEST = "matkhau-test"
 MAT_KHAU_CU = "matkhau-cu"
-# pbkdf2 với ít vòng lặp để test chạy nhanh; chỉ dùng trong test
 _HASH_TEST = generate_password_hash(MAT_KHAU_TEST, method="pbkdf2:sha256:1000")
+
 TAI_KHOAN_TEST = [
-    ("kd1", "KD", _HASH_TEST),
-    ("kho1", "KHO", _HASH_TEST),
-    ("kt1", "KT", _HASH_TEST),
-    ("nv1", "NV", _HASH_TEST),
-    ("khach1", "KH", _HASH_TEST),
-    # định dạng SHA-256 không muối của dữ liệu mẫu cũ
-    ("cu1", "KD", hashlib.sha256(MAT_KHAU_CU.encode()).hexdigest()),
+    ("admin1", "ADMIN", _HASH_TEST, "Quản trị viên"),
+    ("nv1", "NV", _HASH_TEST, "Nhân viên vận hành"),
+    ("khach1", "KH", _HASH_TEST, "Nguyễn Văn A"),
+    ("khach2", "KH", _HASH_TEST, "Trần Thị B"),
+    ("cu1", "ADMIN", hashlib.sha256(MAT_KHAU_CU.encode()).hexdigest(), "Admin cũ"),
 ]
 
 
@@ -42,17 +40,47 @@ def db():
     database = client[TEST_DB]
     apply_schema(database)
 
-    database.khachhang.insert_one({"_id": "KH0001", "ten_kh": "Cửa hàng A", "sdt": "0900000001"})
-    database.sanpham.insert_many([
-        {"_id": "SP0001", "ten_sp": "Áo thun", "don_gia": 100_000, "mau": ["Trắng", "Đen"], "size": ["M", "L"]},
-        {"_id": "SP0002", "ten_sp": "Quần jean", "don_gia": 150_000, "mau": ["Xanh navy"], "size": ["M", "L"]},
+    database.danhmuc.insert_many([
+        {"_id": "DM01", "ten_dm": "Áo Sơ Mi", "slug": "ao-so-mi", "mo_ta": "Sơ mi", "thu_tu": 1},
+        {"_id": "DM02", "ten_dm": "Suits & Blazer", "slug": "suits-blazer", "mo_ta": "Blazer", "thu_tu": 2},
     ])
     database.nguoidung.insert_many([
-        {"_id": f"ND-{ten}", "ten_dang_nhap": ten, "mat_khau": mk, "vai_tro": vt}
-        for ten, vt, mk in TAI_KHOAN_TEST
+        {"_id": f"ND-{ten}", "ten_dang_nhap": ten, "mat_khau": mk, "vai_tro": vt, "ho_ten": ht}
+        for ten, vt, mk, ht in TAI_KHOAN_TEST
     ])
-    database.nguyenvatlieu.insert_one({"_id": "NVL0001", "ten_nvl": "Vải cotton", "so_luong_ton": 100})
-    database.nguyenvatlieu.insert_one({"_id": "NVL0002", "ten_nvl": "Chỉ may", "so_luong_ton": 5})
+    database.khachhang.insert_many([
+        {
+            "_id": "KH0001", "ten_kh": "Nguyễn Văn A", "sdt": "0900000001",
+            "dia_chi": "128 Phố Huế, Hà Nội", "ma_nd": "ND-khach1", "hoat_dong": True,
+        },
+        {
+            "_id": "KH0002", "ten_kh": "Trần Thị B", "sdt": "0900000002",
+            "dia_chi": "86 Đồng Khởi, TP.HCM", "ma_nd": "ND-khach2", "hoat_dong": True,
+        },
+    ])
+    database.sanpham.insert_many([
+        {
+            "_id": "SP0001", "ten_sp": "Áo Sơ Mi Trắng Poplin", "ma_dm": "DM01",
+            "don_gia": 800_000, "gia_goc": 1_000_000, "bo_suu_tap": "sale",
+            "form_dang": "Slim Fit", "chat_lieu": "Cotton", "mo_ta": "Sơ mi cao cấp",
+            "hinh_anh": ["prod_shirt_white.jpg"], "hoat_dong": True,
+            "bien_the": [
+                {"mau": "Trắng", "size": "M", "ton_kho": 15},
+                {"mau": "Trắng", "size": "L", "ton_kho": 5},
+                {"mau": "Đen", "size": "M", "ton_kho": 10},
+            ],
+        },
+        {
+            "_id": "SP0002", "ten_sp": "Áo Blazer Len Ý", "ma_dm": "DM02",
+            "don_gia": 2_500_000, "gia_goc": 2_500_000, "bo_suu_tap": "moi",
+            "form_dang": "Tailored Fit", "chat_lieu": "Wool", "mo_ta": "Blazer",
+            "hinh_anh": ["look_blazer.jpg"], "hoat_dong": True,
+            "bien_the": [
+                {"mau": "Xanh navy", "size": "L", "ton_kho": 4},
+                {"mau": "Đen", "size": "M", "ton_kho": 12},
+            ],
+        },
+    ])
 
     yield database
 
@@ -62,7 +90,6 @@ def db():
 
 @pytest.fixture
 def tao_client(db):
-    """Trả về hàm tạo test client; truyền tên đăng nhập để đăng nhập sẵn, bỏ trống để chưa đăng nhập."""
     from app.web import create_app
 
     def _tao(ten=None, mat_khau=MAT_KHAU_TEST):
